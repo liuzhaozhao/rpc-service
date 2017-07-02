@@ -1,0 +1,91 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.service</groupId>
+  <artifactId>rpc-service</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+  <properties>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<source>1.8</source>
+				<target>1.8</target>
+			</configuration>
+		</plugin>
+	</plugins>
+<!-- 	<resources> -->
+<!-- 		<resource> -->
+<!-- 			<directory>src/test</directory> -->
+<!-- 			<filtering>true</filtering> -->
+<!-- 			<excludes> -->
+<!-- 				<exclude>**/*.*</exclude> -->
+<!-- 			</excludes> -->
+<!-- 		</resource> -->
+<!-- 	</resources> -->
+  </build>
+  
+  <dependencies>
+  	<!-- 日志 -->
+	<dependency>
+	    <groupId>log4j</groupId>
+	    <artifactId>log4j</artifactId>
+	    <version>1.2.17</version>
+	</dependency>
+  	<!-- 反射包，提供快速反射调用（注意自己加缓存） -->
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>reflectasm</artifactId>
+      <version>1.11.3</version>
+    </dependency>
+    <!-- 缓存包依赖包 -->
+<!-- 	<dependency> -->
+<!-- 	    <groupId>org.ow2.asm</groupId> -->
+<!-- 	    <artifactId>asm</artifactId> -->
+<!-- 	    <version>6.0_ALPHA</version> -->
+<!-- 	</dependency> -->
+	<!-- netty包 -->
+	<dependency>
+	    <groupId>io.netty</groupId>
+	    <artifactId>netty-all</artifactId>
+	    <version>4.1.12.Final</version>
+	</dependency>
+	<!-- jaxrs接口规范 -->
+	<dependency>
+	    <groupId>javax.ws.rs</groupId>
+	    <artifactId>javax.ws.rs-api</artifactId>
+	    <version>2.1-m09</version>
+	</dependency>
+	<!-- javassist快速动态代理（asm也挺快的，但是较复杂） -->
+	<dependency>
+	    <groupId>org.javassist</groupId>
+	    <artifactId>javassist</artifactId>
+	    <version>3.22.0-CR2</version>
+	</dependency>
+	<!-- apache工具包 -->
+	<dependency>
+	    <groupId>org.apache.commons</groupId>
+	    <artifactId>commons-lang3</artifactId>
+	    <version>3.6</version>
+	</dependency>
+	<!-- 阿里巴巴json序列化（用于HTTP传输对象，如果不使用，可排除该jar -->
+	<dependency>
+	    <groupId>com.alibaba</groupId>
+	    <artifactId>fastjson</artifactId>
+	    <version>1.2.33</version>
+	</dependency>
+	<!-- java快速序列化框架（用于TCP传输对象），如果不使用可排除该jar -->
+	<dependency>
+	    <groupId>de.ruedigermoeller</groupId>
+	    <artifactId>fst</artifactId>
+	    <version>2.50</version>
+	</dependency>
+	
+    
+    
+  </dependencies>
+</project>
