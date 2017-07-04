@@ -23,19 +23,23 @@ public class HttpMethod {
 	 * @param url
 	 * @return
 	 */
-	public static MethodInfo getMethodInfo(String url) {
+	public static MethodInfo getMethodInfo(String url, String httpType) {
 		if(StringUtils.isBlank(url)) {
 			return null;
 		}
 		MethodInfo methodInfo = methods.get(url);
-		if(methodInfo != null) {// 先精确匹配地址
+		if(methodInfo != null && methodInfo.isSupportHttpType(httpType)) {// 先精确匹配地址
 			return methodInfo;
 		}
 		try{
 			for(String dynamicUrl : dynamicUrlmethods.keySet()) {// 匹配动态url
 				Matcher m = Pattern.compile(dynamicUrl).matcher(url);
-				if(m.matches()){
-				    return dynamicUrlmethods.get(dynamicUrl);
+				if(!m.matches()){
+					continue;
+				}
+				methodInfo = dynamicUrlmethods.get(dynamicUrl);
+				if(methodInfo != null && methodInfo.isSupportHttpType(httpType)) {
+					return dynamicUrlmethods.get(dynamicUrl);
 				}
 			}
 		} catch (Exception e){

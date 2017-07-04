@@ -1,4 +1,4 @@
-package com.service.rpc.common.json;
+package com.service.rpc.serialize.json;
 
 import java.lang.reflect.Type;
 
@@ -11,6 +11,12 @@ import java.lang.reflect.Type;
  */
 public interface IJson {
 	
+	/**
+	 * 对象转换为byte数组
+	 * @param obj
+	 * @return
+	 */
+	public byte[] toByte(Object obj);
 	
 	/**
 	 * 对象转json字符串

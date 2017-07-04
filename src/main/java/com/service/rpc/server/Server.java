@@ -1,14 +1,9 @@
 package com.service.rpc.server;
 
-import java.lang.reflect.Method;
-
 import org.apache.log4j.Logger;
 
-import com.service.rpc.common.Utils;
-import com.service.rpc.exception.NoPathException;
 import com.service.rpc.exception.RepeatedPathException;
-import com.service.rpc.server.http.HttpMethod;
-import com.service.rpc.server.http.MethodInfo;
+import com.service.rpc.server.http.HttpServer;
 
 public class Server {
 	private static final Logger log = Logger.getLogger(Server.class);
@@ -20,8 +15,9 @@ public class Server {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 * @throws RepeatedPathException 
+	 * @throws InterruptedException 
 	 */
-	public static void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException {
+	public static void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
 		initRpcMethod(classes);
 		startHttp(port, classes);
 	}
@@ -32,9 +28,10 @@ public class Server {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 * @throws RepeatedPathException 
+	 * @throws InterruptedException 
 	 */
-	public static void startHttp(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException {
-		initHttpMethod(classes);
+	public static void startHttp(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		HttpServer.start(port, classes);
 	}
 	
 	/**
@@ -42,31 +39,6 @@ public class Server {
 	 */
 	private static void initRpcMethod(Class<?>... classes) {
 		
-	}
-	
-	/**
-	 * 初始化Http方法调用
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 * @throws RepeatedPathException 
-	 */
-	private static void initHttpMethod(Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException {
-		for(Class<?> cls : classes) {
-			Object instance = cls.newInstance();
-			for(Method method : cls.getMethods()) {
-				if(Utils.isObjectMethod(method)) {// 排除Object的公有方法
-					continue;
-				}
-				MethodInvoke invoke = new MethodInvoke(method, instance);
-				try {
-					MethodInfo methodInfo = new MethodInfo(invoke, method);
-					HttpMethod.addMethodInfo(methodInfo);
-				} catch (NoPathException e) {
-					log.info(e.getMessage(), e);
-				}
-//				System.err.println(Utils.getMethodIdentify(method));
-			}
-		}
 	}
 	
 	/**

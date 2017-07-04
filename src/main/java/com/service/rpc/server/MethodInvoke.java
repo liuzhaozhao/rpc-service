@@ -16,10 +16,10 @@ public class MethodInvoke {
 	private Object instance;// 服务类实例
 	
 	public MethodInvoke(Method method, Object instance) {
-		this(method.getClass(), method.getName(), instance, method.getParameterTypes());
+		this(method.getDeclaringClass(), method.getName(), instance, method.getParameterTypes());
 	}
 	
-	public MethodInvoke(Class<?> serviceClass, String methodName, Object instance, Class<?>... paramTypes) {
+	private MethodInvoke(Class<?> serviceClass, String methodName, Object instance, Class<?>... paramTypes) {
 		this.methodAccess = MethodAccess.get(serviceClass);
 		if(paramTypes != null && paramTypes.length > 0) {
 			this.methodIndex = methodAccess.getIndex(methodName, paramTypes);

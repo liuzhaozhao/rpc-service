@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.service.rpc.common.Utils;
 import com.service.rpc.exception.NoPathException;
 import com.service.rpc.server.MethodInvoke;
+import com.service.rpc.server.http.returnType.ReturnType;
 
 public class MethodInfo {
 	private MethodInvoke invoke;// 反射调用类
@@ -25,10 +26,10 @@ public class MethodInfo {
 	private String pathPattern;// 正则匹配的url（hasPathVar=true时有值）
 	private String[] pathVarNames;// URL地址变量名字数组（hasPathVar=true时有值） 
 	
-	private List<String> supportHttpType;// http支持的请求类型，具体类型见HttpType.java
+	private List<String> supportHttpType = new ArrayList<String>();// http支持的请求类型，具体类型见HttpType.java
 	private MethodParam[] methodParams;// 方法对应的请求参数数组 
 	// 暂时不实现返回值类型配置，统一使用json
-//	private String returnType;// 方法返回数据类型，目前支持json、xml，具体参考：javax.ws.rs.core.MediaType类，根据该值生成返回值
+	private ReturnType returnType = ReturnType.JSON;// 方法返回数据类型，可支持json、xml，具体参考：javax.ws.rs.core.MediaType类，根据该值生成返回值
 	
 	public MethodInfo(MethodInvoke invoke, Method method) throws NoPathException {
 		this.invoke = invoke;
@@ -55,7 +56,7 @@ public class MethodInfo {
 			return;
 		}
 		String classUrlPath = "/";
-		Path classPath = method.getClass().getAnnotation(Path.class);
+		Path classPath = method.getDeclaringClass().getAnnotation(Path.class);
 		if(classPath != null && !"".equals(classPath.value().trim())) {
 			classUrlPath = classPath.value().trim();
 			if(!classUrlPath.startsWith("/")) {
@@ -103,7 +104,7 @@ public class MethodInfo {
 	}
 	
 	/**
-	 * 设置方法参数
+	 * 设置方法参数，如注解、参数类型
 	 */
 	private void setMethodParam() {
 		Type[] genericParameterTypes = method.getGenericParameterTypes();
@@ -143,7 +144,11 @@ public class MethodInfo {
 		if(StringUtils.isBlank(httpType)) {
 			return false;
 		}
-		return supportHttpType.contains(httpType);
+		return supportHttpType.contains(httpType.toLowerCase());
+	}
+	
+	public Object invoke(Object[] params) {
+		return invoke.invoke(params);
 	}
 	
 	public boolean isHasPathVar() {
@@ -156,6 +161,18 @@ public class MethodInfo {
 	
 	public String getUrlPath() {
 		return urlPath;
+	}
+	
+	public ReturnType getReturnType() {
+		return returnType;
+	}
+	
+	public MethodParam[] getMethodParams() {
+		return methodParams;
+	}
+	
+	public String[] getPathVarNames() {
+		return pathVarNames;
 	}
 	
 }

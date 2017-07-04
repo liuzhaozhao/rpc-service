@@ -8,6 +8,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
 @Path("/testService")
+//@Produces(MediaType.APPLICATION_JSON+";"+MediaType.CHARSET_PARAMETER+"=utf-8")// 设置返回值类型
 public class TestService implements ITestService {
 	
 	public String testM(String arg) {
@@ -41,7 +42,7 @@ public class TestService implements ITestService {
 	public String test_1(@PathParam("arg1") @DefaultValue("1") int arg1, @QueryParam("arg") String arg, 
 			@FormParam("arg3") Integer arg3, @FormParam("dataBean") DataBean<Integer> dataBean) {
 //		System.err.println("testM");
-		return "return testM";
+		return arg1+arg+arg3;
 	}
 	
 	String test_2() {
