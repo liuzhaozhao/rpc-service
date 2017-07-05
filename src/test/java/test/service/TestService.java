@@ -1,5 +1,6 @@
 package test.service;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -39,10 +40,10 @@ public class TestService implements ITestService {
 	}
 	
 	@POST @Path("/test_1/{arg1}")
-	public String test_1(@PathParam("arg1") @DefaultValue("1") int arg1, @QueryParam("arg") String arg, 
-			@FormParam("arg3") Integer arg3, @FormParam("dataBean") DataBean<Integer> dataBean) {
+	public String test_1(@PathParam("arg1") int arg1, @QueryParam("arg") @DefaultValue("1") String arg, 
+			@FormParam("arg3") @DefaultValue("3") Integer arg3, @BeanParam DataBean<Integer> dataBean) {
 //		System.err.println("testM");
-		return arg1+arg+arg3;
+		return arg1+"...."+arg+"...."+arg3+"...."+dataBean;
 	}
 	
 	String test_2() {

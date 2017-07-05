@@ -150,4 +150,25 @@ public class Utils {
 			return text;
 		}
     }
+	
+	/**
+	 * 获取不带参数的url
+	 * @param uri
+	 * @return
+	 */
+	public static String getUrl(String uri) {
+		if(StringUtils.isBlank(uri)) {
+			return uri;
+		}
+		int endIndex = uri.indexOf("?");
+		if(endIndex == -1) {
+			return uri;
+		} else {
+			return uri.substring(0, endIndex);
+		}
+	}
+	
+	public static void main(String[] args) {
+		System.err.println(getUrl("http://localhost:8080/test_1/123/?arg=“arg2”&arg3=arg3"));
+	}
 }

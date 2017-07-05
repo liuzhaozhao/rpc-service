@@ -1,4 +1,4 @@
-package com.service.rpc.old;
+package old;
 
 import com.esotericsoftware.reflectasm.MethodAccess;
 

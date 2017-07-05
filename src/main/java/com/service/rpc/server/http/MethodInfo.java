@@ -4,7 +4,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +26,7 @@ public class MethodInfo {
 	private String urlPath;// http服务的URL地址
 	private boolean hasUrlPathVar;// URL地址是否包含变量
 	private String pathPattern;// 正则匹配的url（hasPathVar=true时有值）
+	private Pattern pattern;// url规则匹配
 	private String[] pathVarNames;// URL地址变量名字数组（hasPathVar=true时有值） 
 	
 	private List<String> supportHttpType = new ArrayList<String>();// http支持的请求类型，具体类型见HttpType.java
@@ -85,6 +88,7 @@ public class MethodInfo {
 		}
 		m.appendTail(sb);
 		pathPattern = sb.toString();
+		pattern = Pattern.compile(pathPattern);
 		pathVarNames = varNames.toArray(new String[]{});
 	}
 	
@@ -135,6 +139,26 @@ public class MethodInfo {
 	}
 	
 	/**
+	 * 根据url获取匹配的url变量信息
+	 * @param url
+	 * @return
+	 */
+	public Map<String, String> getPathParams(String url) {
+		Map<String, String> pathParams = new HashMap<String, String>();
+		if(!hasUrlPathVar) {
+			return pathParams;
+		}
+		Matcher mUrl = pattern.matcher(url);
+		if (!mUrl.matches() || mUrl.groupCount() != pathVarNames.length) {// 个数必须匹配才能获取url变量，理论上不会出现不匹配的
+			return pathParams;
+		}
+		for (int i = 0; i < mUrl.groupCount(); i++) {
+			pathParams.put(pathVarNames[i], mUrl.group(i + 1));
+		}
+		return pathParams;
+	}
+	
+	/**
 	 * 判断服务是否支持该请求url
 	 * 
 	 * 运行时调用
@@ -173,6 +197,10 @@ public class MethodInfo {
 	
 	public String[] getPathVarNames() {
 		return pathVarNames;
+	}
+	
+	public Method getMethod() {
+		return method;
 	}
 	
 }

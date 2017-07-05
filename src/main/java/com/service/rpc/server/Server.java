@@ -45,6 +45,6 @@ public class Server {
 	 * 关闭服务(停止对外提供http、rpc服务)
 	 */
 	public static void stop() {
-		 
+		HttpServer.stop();
 	}
 }

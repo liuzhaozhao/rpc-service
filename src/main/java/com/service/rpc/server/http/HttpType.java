@@ -6,6 +6,8 @@ import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 定义支持的请求类型
  * @author liuzhao
@@ -65,16 +67,17 @@ public enum HttpType {
 	 * @param type
 	 * @return
 	 */
-//	public static HttpType get(String type) {
-//		if(StringUtils.isBlank(type)) {
-//			return null;
-//		}
-//		HttpType httpType = null;
-//		try{
-//			httpType = HttpType.valueOf(type.toLowerCase());
-//		} catch(Exception e) {
-//			
-//		}
-//		return httpType;
-//	}
+	public static HttpType get(String type) {
+		if(StringUtils.isBlank(type)) {
+			return null;
+		}
+		HttpType httpType = null;
+		for(HttpType ht : HttpType.values()) {
+			if(ht.getType().equalsIgnoreCase(type)) {
+				httpType = ht;
+				break;
+			}
+		}
+		return httpType;
+	}
 }

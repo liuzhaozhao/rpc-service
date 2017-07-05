@@ -67,7 +67,7 @@ public class HttpServer {
 					MethodInfo methodInfo = new MethodInfo(invoke, method);
 					HttpMethod.addMethodInfo(methodInfo);
 				} catch (NoPathException e) {
-					log.info(e.getMessage(), e);
+					log.info(e.getMessage());
 				}
 //				System.err.println(Utils.getMethodIdentify(method));
 			}

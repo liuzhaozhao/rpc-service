@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.service.rpc.common.Utils;
 import com.service.rpc.exception.RepeatedPathException;
 
 public class HttpMethod {
@@ -68,5 +69,6 @@ public class HttpMethod {
 			}
 			methods.put(methodInfo.getUrlPath(), methodInfo);
 		}
+		log.info(Utils.getMethodIdentify(methodInfo.getMethod())+"开启http服务："+methodInfo.getUrlPath());
 	}
 }
