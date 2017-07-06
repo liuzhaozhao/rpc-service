@@ -1,4 +1,4 @@
-package com.service.rpc.server.http;
+package com.service.rpc.server.http.method;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

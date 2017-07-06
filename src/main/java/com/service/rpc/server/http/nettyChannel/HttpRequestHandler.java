@@ -12,11 +12,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.service.rpc.common.Utils;
-import com.service.rpc.server.http.HttpMethod;
-import com.service.rpc.server.http.HttpType;
-import com.service.rpc.server.http.MethodInfo;
-import com.service.rpc.server.http.MethodParam;
-import com.service.rpc.server.http.ParamType;
+import com.service.rpc.server.http.method.HttpMethod;
+import com.service.rpc.server.http.method.HttpType;
+import com.service.rpc.server.http.method.MethodInfo;
+import com.service.rpc.server.http.method.MethodParam;
+import com.service.rpc.server.http.method.ParamType;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
