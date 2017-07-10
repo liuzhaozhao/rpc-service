@@ -4,8 +4,8 @@ import java.lang.reflect.Type;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.service.rpc.serialize.json.FastJson;
-import com.service.rpc.serialize.json.IJson;
+import com.service.rpc.common.json.FastJson;
+import com.service.rpc.common.json.IJson;
 
 public class MethodParam {
 	private IJson jsonConcert = new FastJson();// 暂时写死，后续可配置

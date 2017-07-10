@@ -1,4 +1,4 @@
-package com.service.rpc.serialize.json;
+package com.service.rpc.common.json;
 
 import java.lang.reflect.Type;
 
@@ -16,15 +16,19 @@ public class FastJson implements IJson {
 		return JSON.toJSONStringWithDateFormat(obj, DateUtil.DATE_FORMATE, SerializerFeature.WriteDateUseDateFormat);	// return JSON.toJSONString(object, SerializerFeature.WriteDateUseDateFormat);
 	}
 	
-	public <T> T toBean(String jsonString, Type type) {
-		return JSON.parseObject(jsonString, type);
-	}
-
 	@Override
 	public byte[] toByte(Object obj) {
 //		if(obj instanceof String) {// 去除字符串前后的双引号
 //			return ((String)obj).getBytes();
 //		}
 		return JSON.toJSONBytes(obj);
+	}
+	public <T> T toBean(String jsonString, Type type) {
+		return JSON.parseObject(jsonString, type);
+	}
+
+	@Override
+	public <T> T toBean(byte[] bytes, Type type) {
+		return JSON.parseObject(bytes, type);
 	}
 }

@@ -1,5 +1,7 @@
 package test.reflection;
 
+import java.lang.reflect.Method;
+
 import com.esotericsoftware.reflectasm.MethodAccess;
 
 import test.service.TestService;
@@ -12,77 +14,77 @@ import test.service.TestService;
  * 
  * 注意点：此处把times修改未long类型会发现执行时间长很多
  * @author liuzhao
+ * 
+ * 忽略上面的测试结果，经再次测试发现上面的测试结果是无参方法的测试结果
+ * 
+ * 如需测试其他的自己运行
  *
  */
 public class ReflectionMain {
+//	private static int times = 1;
+	private static int times = 100000000;
+//	private static int times = 2147483647;
+//	private static long times = 2147483647;
+	
+	private static TestService service = new TestService();
+	private static MethodAccess access = MethodAccess.get(TestService.class);
+	private static Object[] objs = new Object[]{1, "arg"};
+	private static Class<?>[] argsType = new Class[]{int.class, String.class};
+	
 	public static void main(String[] args) throws Exception {
-		TestService service = new TestService();
-//		int times = 100000000;
-		int times = 2147483647;
-//		long times = 2147483647;
-		long start = System.currentTimeMillis();
-		
-		// asm反射调用时间测试
-		MethodAccess access = MethodAccess.get(TestService.class);
-//		for(int i = 0; i < times; i++) {
-////			System.err.println((String)access.invoke(service, "testM"));
-//			access.invoke(service, "testM");
-////			System.err.println((String)access.invoke(service, "testM2", 1, "arg"));
-//			access.invoke(service, "testM2", 1, "arg");
-//		}
-//		System.err.println(System.currentTimeMillis() - start);
-		
+//		asm1();
+//		asm2();
+//		direct();
+		javaReflect();
+	}
+	
+	private static void asm1() {
 		// asm反射调用时间测试（使用方法位置调用）
-//		int index_11 = access.getIndex("testM", 0);
+		int index_11 = access.getIndex("testM", 0);
 //		int index_12 = access.getIndex("testM", String.class);// 测试重载方法
 //		int index_13 = access.getIndex("testM", String.class, int.class);// 测试重载方法
 		int index_14 = access.getIndex("testM", int.class, String.class);// 测试重载方法
-		int index_2 = access.getIndex("testM2");
-		start = System.currentTimeMillis();
-		String arg = "arg";
+		long start = System.currentTimeMillis();
 		for(int i = 0; i < times; i++) {
 //			System.err.println(access.invoke(service, index_11));
+//			System.err.println(access.invoke(service, index_14, objs));
+					
 //			access.invoke(service, index_11);
-//			System.err.println(access.invoke(service, index_12, "arg"));
-//			System.err.println(access.invoke(service, index_13, "arg", 123));
-			
-			access.invoke(service, index_14, new Object[]{1, arg});
-//			System.err.println(access.invoke(service, index_14, 123, "arg"));
-			
-			access.invoke(service, index_2, new Object[]{1, arg});
-//			System.err.println(access.invoke(service, index_2, new Object[]{1, "arg11"}));
+			access.invoke(service, index_14, objs);
 		}
 		System.err.println(System.currentTimeMillis() - start);
-		
-		// asm反射调用时间测试（使用参数类型调用）
-//		Class<?>[] argsType = new Class[]{int.class, String.class};
-//		start = System.currentTimeMillis();
-//		for(int i = 0; i < times; i++) {
-//			access.invoke(service, "testM");
-//			access.invoke(service, "testM2", argsType, 1, "arg");
-//		}
-//		System.err.println(System.currentTimeMillis() - start);
-		
-		// java直接调用
-//		start = System.currentTimeMillis();
-//		for(int i = 0; i < times; i++) {
-////			System.err.println(service.testM());
-//			service.testM();
-////			System.err.println(service.testM2(1, "arg"));
-//			service.testM2(1, "arg");
-//		}
-//		System.err.println(System.currentTimeMillis() - start);
-		
-		// java反射调用
-//		Class<?> c = Class.forName("test.reflection.TestService");
-//	    Class<?>[] argsType = new Class[]{int.class, String.class};
-//	    Method testM = c.getMethod("testM");
-//	    Method testM2 = c.getMethod("testM2", argsType);
-//	    start = System.currentTimeMillis();
-//		for(int i = 0; i < times; i++) {
-//			testM.invoke(service);
-//			testM2.invoke(service, 1, "arg");
-//		}
-//		System.err.println(System.currentTimeMillis() - start);
 	}
+	
+	private static void asm2() {
+		// asm反射调用时间测试（使用参数类型调用）
+		long start = System.currentTimeMillis();
+		for(int i = 0; i < times; i++) {
+//			System.err.println(access.invoke(service, "testM", argsType, objs));
+			access.invoke(service, "testM", argsType, objs);
+		}
+		System.err.println(System.currentTimeMillis() - start);
+	}
+	
+	private static void direct() {
+		// java直接调用
+		long start = System.currentTimeMillis();
+		for(int i = 0; i < times; i++) {
+//			System.err.println(service.testM(1, "arg"));
+			service.testM(1, "arg");
+		}
+		System.err.println(System.currentTimeMillis() - start);
+	}
+	
+	private static void javaReflect() throws Exception {
+		// java反射调用
+		Class<?> c = Class.forName(TestService.class.getName());
+	    Method testM = c.getMethod("testM", argsType);
+	    long start = System.currentTimeMillis();
+		for(int i = 0; i < times; i++) {
+//			System.err.println(testM.invoke(service, objs));
+			testM.invoke(service, objs);
+		}
+		System.err.println(System.currentTimeMillis() - start);
+	}
+	
 }

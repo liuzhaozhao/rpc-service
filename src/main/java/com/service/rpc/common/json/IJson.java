@@ -1,4 +1,4 @@
-package com.service.rpc.serialize.json;
+package com.service.rpc.common.json;
 
 import java.lang.reflect.Type;
 
@@ -31,4 +31,12 @@ public interface IJson {
 	 * @return
 	 */
 	public <T> T toBean(String jsonString, Type type);
+	
+	/**
+	 * 字节转对象
+	 * @param bytes
+	 * @param type
+	 * @return
+	 */
+	public <T> T toBean(byte[] bytes, Type type);
 }

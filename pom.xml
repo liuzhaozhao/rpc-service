@@ -36,18 +36,19 @@
 	    <artifactId>log4j</artifactId>
 	    <version>1.2.17</version>
 	</dependency>
-  	<!-- 反射包，提供快速反射调用（注意自己加缓存） -->
+  	<!-- 反射包，提供快速反射调用（注意自己加缓存），经测试并不一定比java快 -->
     <dependency>
       <groupId>com.esotericsoftware</groupId>
       <artifactId>reflectasm</artifactId>
       <version>1.11.3</version>
+      <scope>test</scope>
     </dependency>
     <!-- 缓存包依赖包 -->
-<!-- 	<dependency> -->
-<!-- 	    <groupId>org.ow2.asm</groupId> -->
-<!-- 	    <artifactId>asm</artifactId> -->
-<!-- 	    <version>6.0_ALPHA</version> -->
-<!-- 	</dependency> -->
+	<dependency>
+	    <groupId>org.ow2.asm</groupId>
+	    <artifactId>asm</artifactId>
+	    <version>6.0_ALPHA</version>
+	</dependency>
 	<!-- netty包 -->
 	<dependency>
 	    <groupId>io.netty</groupId>

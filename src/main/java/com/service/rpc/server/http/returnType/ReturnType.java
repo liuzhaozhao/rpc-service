@@ -2,7 +2,7 @@ package com.service.rpc.server.http.returnType;
 
 import javax.ws.rs.core.MediaType;
 
-import com.service.rpc.serialize.json.FastJson;
+import com.service.rpc.common.json.FastJson;
 
 public enum ReturnType {
 	JSON(MediaType.APPLICATION_JSON+";"+MediaType.CHARSET_PARAMETER+"=utf-8", new JsonReturn(new FastJson())),

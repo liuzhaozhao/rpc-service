@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.service.rpc.common.Utils;
 import com.service.rpc.exception.NoPathException;
-import com.service.rpc.server.MethodInvoke;
+import com.service.rpc.server.http.MethodInvoke;
 import com.service.rpc.server.http.returnType.ReturnType;
 
 public class MethodInfo {

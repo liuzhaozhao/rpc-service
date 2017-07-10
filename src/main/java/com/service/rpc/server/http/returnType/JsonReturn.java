@@ -1,6 +1,6 @@
 package com.service.rpc.server.http.returnType;
 
-import com.service.rpc.serialize.json.IJson;
+import com.service.rpc.common.json.IJson;
 
 public class JsonReturn implements IReturn {
 	private IJson jsonConvert;
