@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.jfinal.kit.HashKit;
 import com.service.rpc.common.Utils;
 import com.service.rpc.exception.RepeatedPathException;
 import com.service.rpc.serialize.FstSerialize;
@@ -24,10 +25,19 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class RpcServer {
+	public static RpcServer server = new RpcServer();
+	
 	private static Logger log = Logger.getLogger(RpcServer.class);
-	private static Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
-	private static EventLoopGroup bossGroup;
-	private static EventLoopGroup workerGroup;
+	private Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
+	
+	private int port;
+	private Class<?>[] classes;
+	private ISerialize serialize = new FstSerialize();
+	private EventLoopGroup bossGroup;
+	private EventLoopGroup workerGroup;
+	private boolean enableLog = true;
+	
+	private RpcServer() {}
 	
 	/**
 	 * 开启RPC服务
@@ -36,18 +46,32 @@ public class RpcServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public static void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		start(port, new FstSerialize(), classes);
+	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		this.port = port;
+		this.classes = classes;
+		initMethod();
+		startServer();
 	}
-	public static void start(int port, ISerialize serialize, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		initMethod(classes);
-		startServer(port, serialize);
+	
+	public RpcServer setSerialize(ISerialize serialize) {
+		Utils.checkArgument(serialize != null, "序列化配置不能为null");
+		this.serialize = serialize;
+		return this;
+	}
+	
+	public RpcServer setEnableLog(boolean enableLog) {
+		this.enableLog = enableLog;
+		return this;
+	}
+	
+	public boolean isEnableLog() {
+		return enableLog;
 	}
 	
 	/**
 	 * 关闭服务
 	 */
-	public static void stop() {
+	public void stop() {
 		try{
 			bossGroup.shutdownGracefully();
 			workerGroup.shutdownGracefully();
@@ -56,26 +80,29 @@ public class RpcServer {
 		}
 	}
 	
+	public MethodInfo getMethodInfo(String identify) {
+		return methods.get(identify);
+	}
+	
 	/**
 	 * 初始化RPC方法调用
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	private static void initMethod(Class<?>... classes) throws InstantiationException, IllegalAccessException {
+	private void initMethod() throws InstantiationException, IllegalAccessException {
 		for(Class<?> cls : classes) {
 			Object instance = cls.newInstance();
-			for(Method method : cls.getMethods()) {
-				if(Utils.isObjectMethod(method)) {// 排除Object的公有方法
-					continue;
+			Utils.checkArgument(cls.getInterfaces().length > 0, "类必须继承接口");
+			for(Class<?> api : cls.getInterfaces()) {
+				for(Method method : api.getMethods()) {
+					if(Utils.isObjectMethod(method)) {// 排除Object的公有方法
+						continue;
+					}
+					MethodInfo methodInfo = new MethodInfo(method, instance);
+					addMethodInvoke(methodInfo);
 				}
-				MethodInfo invoke = new MethodInfo(method, instance);
-				addMethodInvoke(method, invoke);
 			}
 		}
-	}
-	
-	public static MethodInfo getMethodInfo(String identify) {
-		return methods.get(identify);
 	}
 	
 	/**
@@ -83,14 +110,15 @@ public class RpcServer {
 	 * @param method
 	 * @param methodInvoke
 	 */
-	public static synchronized void addMethodInvoke(Method method, MethodInfo methodInfo) {
-		if(method == null) {
+	private synchronized void addMethodInvoke(MethodInfo methodInfo) {
+		if(methodInfo == null) {
 			return;
 		}
-		String identify = Utils.getMethodIdentify(method);
+		String identify = HashKit.md5(methodInfo.getMethodStr());
 		if(methods.get(identify) != null) {// 以第一次设置的为准，后面的忽略（重复设置）
 			return;
 		}
+		log.info("添加rpc方法："+methodInfo.getMethodStr());
 		methods.put(identify, methodInfo);
 	}
 	
@@ -100,7 +128,7 @@ public class RpcServer {
 	 * @param serialize
 	 * @throws InterruptedException
 	 */
-	private static void startServer(int port, ISerialize serialize) throws InterruptedException {
+	private void startServer() throws InterruptedException {
 		bossGroup = new NioEventLoopGroup(1);
 		workerGroup = new NioEventLoopGroup();
 		

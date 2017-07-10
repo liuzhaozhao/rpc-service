@@ -1,5 +1,8 @@
 package test.service;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -39,12 +42,14 @@ public class TestService implements ITestService {
 	}
 	
 	@POST @Path("/test_1/{arg1}")
-	public String test_1(@PathParam("arg1") int arg1, @QueryParam("arg") @DefaultValue("1") String arg, 
-			@FormParam("arg3") @DefaultValue("3") Integer arg3, @BeanParam DataBean<Integer> dataBean) {
-		if(dataBean != null) {
-			System.err.println(dataBean.getMsg());
-		}
-		return arg1+"...."+arg+"...."+arg3+"...."+dataBean;
+	public DataBean<List<String>> test_1(@PathParam("arg1") int arg1, @QueryParam("arg") @DefaultValue("1") String arg, 
+			@FormParam("arg3") @DefaultValue("3") Integer arg3, @BeanParam DataBean<List<String>> dataBean) {
+//		if(dataBean != null) {
+//			System.err.println("dataBean.getMsg()="+dataBean.getMsg());
+//		}
+		DataBean<List<String>> returnData = new DataBean<List<String>>();
+		returnData.setData(Arrays.asList(arg1+"", arg, arg3+"", dataBean.toString()));
+		return returnData;
 	}
 	
 	String test_2() {

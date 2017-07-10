@@ -65,7 +65,7 @@ public class NettyConnect implements ClientConnect {
 		HashSet<InetSocketAddress> newAllServerNodeSet = new HashSet<InetSocketAddress>();
 		for(String ipPort : ipPortList) {
 			String[] array = ipPort.split(":");
-            if (array.length == 2) { // Should check IP and port
+            if (array.length != 2) { // Should check IP and port
             	continue;
             }
             String host = array[0];
@@ -90,7 +90,7 @@ public class NettyConnect implements ClientConnect {
 					break;
 				}
 			}
-			if(exist) {
+			if(!exist) {
 				connectServerNode(socketAddress);
 			}
         }

@@ -44,7 +44,7 @@ public class Utils {
 	 * @param service
 	 */
 	public static <T> void validateServiceInterface(Class<T> service) {
-		checkArgument(service == null, "参数不能为null");
+		checkArgument(service != null, "参数不能为null");
 		checkArgument(service.isInterface(), "参数必须为接口类型");
 		// Prevent API interfaces from extending other interfaces. This not only avoids a bug in
 		// Android (http://b.android.com/58753) but it forces composition of API

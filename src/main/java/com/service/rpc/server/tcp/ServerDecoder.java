@@ -44,7 +44,7 @@ public class ServerDecoder extends ByteToMessageDecoder {
 
         RpcRequest rpcData = serialize.toBean(data, RpcRequest.class);
         if(rpcData.getArgs() != null && serialize.isJson()) {// 如果是json序列化，则参数数据为json字符串，需要再次转换json字符串为对应类型的对象
-        	MethodInfo methodInfo = RpcServer.getMethodInfo(rpcData.getMethodIdentify());
+        	MethodInfo methodInfo = RpcServer.server.getMethodInfo(rpcData.getMethodIdentify());
         	if(methodInfo == null || rpcData.getArgs().length != methodInfo.getMethodParams().size()) {
         		log.warn("无法获取method");
         	} else {

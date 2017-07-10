@@ -7,17 +7,20 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.service.rpc.common.Utils;
 import com.service.rpc.server.invoke.BaseInvoke;
 import com.service.rpc.server.invoke.JavaInvoke;
 
 public class MethodInfo {
 	private Method method;
+	private String methodStr;
 	private BaseInvoke invoke;// 反射调用类
 //	private ISerialize serialize;// 序列化类
 	private List<MethodParam> methodParams = new ArrayList<MethodParam>();// 方法对应的请求参数数组
 	
 	public MethodInfo(Method method, Object clsInstance) {
 		this.method = method;
+		this.methodStr = Utils.getMethodIdentify(method);
 		this.invoke = new JavaInvoke(method, clsInstance);// 默认使用java反射类
 //		this.serialize = new FstSerialize();// 默认使用FstSerialize做序列化
 		setMethodParam(); 
@@ -81,4 +84,11 @@ public class MethodInfo {
 		return methodParams;
 	}
 	
+	public String getMethodStr() {
+		return methodStr;
+	}
+	
+	public Method getMethod() {
+		return method;
+	}
 }

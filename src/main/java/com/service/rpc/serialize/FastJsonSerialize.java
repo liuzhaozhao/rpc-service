@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 import com.service.rpc.common.json.FastJson;
 import com.service.rpc.common.json.IJson;
 
-public class FaseJsonSerialize extends ISerialize {
+public class FastJsonSerialize extends ISerialize {
 	private IJson convert = new FastJson();
 
 	@Override

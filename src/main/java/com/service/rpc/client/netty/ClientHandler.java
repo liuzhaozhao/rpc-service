@@ -1,12 +1,15 @@
 package com.service.rpc.client.netty;
 
 import java.net.SocketAddress;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.Logger;
 
 import com.service.rpc.client.RpcFuture;
+import com.service.rpc.client.ServiceFactory;
+import com.service.rpc.common.json.FastJson;
 import com.service.rpc.transport.RpcRequest;
 import com.service.rpc.transport.RpcResponse;
 
@@ -51,6 +54,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         String requestId = response.getRequestId();
+//        System.err.println(requestId+"	响应数据已收到:"+new FastJson().toStr(response));
         RpcFuture rpcFuture = pendingRequest.get(requestId);
         if (rpcFuture != null) {
         	pendingRequest.remove(requestId);
@@ -63,6 +67,14 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         log.error("client caught exception", cause);
         ctx.close();
     }
+    
+    /**
+     * 此处需注意requestId不能重复
+     * @return
+     */
+    private String getRequestId() {
+		return UUID.randomUUID().toString();
+	}
 
     public void close() {
         channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -74,16 +86,19 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
      * @return
      */
     public RpcFuture send(RpcRequest request) {
+    	request.setRequestId(getRequestId());
         final CountDownLatch latch = new CountDownLatch(1);
-        RpcFuture rpcFuture = new RpcFuture(request);
+        RpcFuture rpcFuture = new RpcFuture(ServiceFactory.factory.getReadTimeoutMills(), request);
         pendingRequest.put(request.getRequestId(), rpcFuture);
-//        channel.writeAndFlush(request);
-        channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                latch.countDown();
-            }
-        });
+//        System.err.println(request.getRequestId()+"	请求准备发送");
+        channel.writeAndFlush(request)
+	        .addListener(new ChannelFutureListener() {
+	            @Override
+	            public void operationComplete(ChannelFuture future) {
+//	            	System.err.println(request.getRequestId()+"	请求已发送出");
+	                latch.countDown();
+	            }
+	        });
         try {
             latch.await();
         } catch (InterruptedException e) {
