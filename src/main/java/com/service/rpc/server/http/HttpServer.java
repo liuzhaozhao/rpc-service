@@ -5,12 +5,13 @@ import java.lang.reflect.Method;
 import org.apache.log4j.Logger;
 
 import com.service.rpc.common.Utils;
+import com.service.rpc.common.json.FastJson;
+import com.service.rpc.common.json.IJson;
 import com.service.rpc.exception.NoPathException;
 import com.service.rpc.exception.RepeatedPathException;
-import com.service.rpc.server.Server;
 import com.service.rpc.server.http.method.HttpMethod;
-import com.service.rpc.server.http.method.MethodInfo;
-import com.service.rpc.server.http.nettyChannel.HttpServerInitializer;
+import com.service.rpc.server.http.method.HttpMethodInfo;
+import com.service.rpc.server.http.netty.HttpServerInitializer;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -22,9 +23,16 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class HttpServer {
-	private static Logger log = Logger.getLogger(Server.class);
-	private static EventLoopGroup bossGroup;
-	private static EventLoopGroup workerGroup;
+	private static Logger log = Logger.getLogger(HttpServer.class);
+	public static HttpServer server = new HttpServer();
+	private EventLoopGroup bossGroup;
+	private EventLoopGroup workerGroup;
+	private int port;
+	private Class<?>[] classes;
+	private boolean enableLog = true;
+	private IJson json = new FastJson();
+	
+	private HttpServer() {}
 	
 	/**
 	 * 开启http服务
@@ -33,15 +41,36 @@ public class HttpServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public static void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		initMethod(classes);
-		startServer(port);
+	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		this.port = port;
+		this.classes = classes;
+		initMethod();
+		startServer();
+	}
+	
+	public HttpServer setEnableLog(boolean enableLog) {
+		this.enableLog = enableLog;
+		return this;
+	}
+	
+	public boolean isEnableLog() {
+		return enableLog;
+	}
+	
+	public HttpServer setJson(IJson json) {
+		Utils.checkArgument(json != null, "序列化配置不能为null");
+		this.json = json;
+		return this;
+	}
+	
+	public IJson getJson() {
+		return json;
 	}
 	
 	/**
 	 * 关闭服务
 	 */
-	public static void stop() {
+	public void stop() {
 		try{
 			bossGroup.shutdownGracefully();
 			workerGroup.shutdownGracefully();
@@ -56,26 +85,24 @@ public class HttpServer {
 	 * @throws InstantiationException 
 	 * @throws RepeatedPathException 
 	 */
-	private static void initMethod(Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException {
+	private void initMethod() throws InstantiationException, IllegalAccessException, RepeatedPathException {
 		for(Class<?> cls : classes) {
 			Object instance = cls.newInstance();
 			for(Method method : cls.getMethods()) {
 				if(Utils.isObjectMethod(method)) {// 排除Object的公有方法
 					continue;
 				}
-				MethodInvoke invoke = new MethodInvoke(method, instance);
 				try {
-					MethodInfo methodInfo = new MethodInfo(invoke, method);
+					HttpMethodInfo methodInfo = new HttpMethodInfo(method, instance);
 					HttpMethod.addMethodInfo(methodInfo);
 				} catch (NoPathException e) {
 					log.info(e.getMessage());
 				}
-//				System.err.println(Utils.getMethodIdentify(method));
 			}
 		}
 	}
 	
-	private static void startServer(int port) throws InterruptedException {
+	private void startServer() throws InterruptedException {
 		bossGroup = new NioEventLoopGroup(1);
 		workerGroup = new NioEventLoopGroup();
 		

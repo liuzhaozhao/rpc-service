@@ -1,4 +1,4 @@
-package com.service.rpc.server.http.nettyChannel;
+package com.service.rpc.server.http.netty;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -13,9 +13,9 @@ import org.apache.log4j.Logger;
 
 import com.service.rpc.common.Utils;
 import com.service.rpc.server.http.method.HttpMethod;
+import com.service.rpc.server.http.method.HttpMethodInfo;
+import com.service.rpc.server.http.method.HttpMethodParam;
 import com.service.rpc.server.http.method.HttpType;
-import com.service.rpc.server.http.method.MethodInfo;
-import com.service.rpc.server.http.method.MethodParam;
 import com.service.rpc.server.http.method.ParamType;
 
 import io.netty.buffer.Unpooled;
@@ -30,9 +30,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
 
@@ -60,7 +57,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     protected String url;
     protected HttpType httpType;
     private PostRequestContentType contentType;
-    protected MethodInfo methodInfo;
+    protected HttpMethodInfo methodInfo;
     
 	@Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -216,9 +213,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	 * @return
 	 */
  	private Object[] getMethodData() {
-		Object[] params = new Object[methodInfo.getMethodParams().length];
-		for(int i=0; i<methodInfo.getMethodParams().length; i++) {
-			MethodParam methodParam = methodInfo.getMethodParams()[i];
+		Object[] params = new Object[methodInfo.getMethodParams().size()];
+		for(int i=0; i<methodInfo.getMethodParams().size(); i++) {
+			HttpMethodParam methodParam = (HttpMethodParam) methodInfo.getMethodParams().get(i);
 			String paramData = null;
 			if(methodParam.getParamType() == ParamType.BEAN_PARAM) {
 				paramData = postBody;

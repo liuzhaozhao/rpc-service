@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.service.rpc.common.Utils;
+import com.service.rpc.server.common.MethodInfo;
 import com.service.rpc.server.http.MethodInvoke;
-import com.service.rpc.server.tcp.MethodInfo;
 
 public class TcpMethod {
 //	private static Logger log = Logger.getLogger(TcpMethod.class);

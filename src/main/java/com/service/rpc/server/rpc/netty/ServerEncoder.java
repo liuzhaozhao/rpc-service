@@ -1,4 +1,4 @@
-package com.service.rpc.server.tcp;
+package com.service.rpc.server.rpc.netty;
 
 import com.service.rpc.serialize.ISerialize;
 import com.service.rpc.transport.RpcResponse;

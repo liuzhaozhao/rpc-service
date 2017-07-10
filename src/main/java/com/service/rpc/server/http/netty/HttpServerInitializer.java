@@ -1,4 +1,4 @@
-package com.service.rpc.server.http.nettyChannel;
+package com.service.rpc.server.http.netty;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

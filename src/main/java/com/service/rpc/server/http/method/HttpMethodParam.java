@@ -1,26 +1,36 @@
 package com.service.rpc.server.http.method;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+
+import javax.ws.rs.DefaultValue;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.service.rpc.common.json.FastJson;
-import com.service.rpc.common.json.IJson;
+import com.service.rpc.server.common.MethodParam;
+import com.service.rpc.server.http.HttpServer;
 
-public class MethodParam {
-	private IJson jsonConcert = new FastJson();// 暂时写死，后续可配置
-	private Type type;// 方法参数对应的java类型，用于Json转对象使用 
-//	private Class<?> cls;// 方法参数对应的Class类
+public class HttpMethodParam extends MethodParam {
 	// 注解类型，目前支持BeanParam（针对post方式的非k-v格式的数据）、FormParam（针对Post方式的k-v请求参数）、PathParam（定义在url上的参数）、QueryParam（get请求参数）
 	private ParamType paramType;// 该参数标识数据从哪里取
 	private String name;// 方法参数对应的名称，k-v时有该值
 	private String defaultValue;// 方法参数默认值
 	
-	public MethodParam(Type type, ParamType paramType, String name, String defaultValue) {
-		this.type = type;
-		this.paramType = paramType;
-		this.name = name;
-		this.defaultValue = defaultValue;
+	public HttpMethodParam(Type type, Class<?> cls, Annotation[] annotations) {
+		super(type, cls, annotations);
+		for(Annotation annotation : annotations) {// 重复的配置以第一个生效
+			if(defaultValue == null && annotation.annotationType() == DefaultValue.class) {// 没有设置默认值时才能设置
+				defaultValue = ((DefaultValue)annotation).value();
+				continue;
+			}
+			if(paramType != null) {// 如果已经赋值，则不需要再设值
+				continue;
+			}
+			paramType = ParamType.get(annotation.annotationType());
+			if(paramType != null) {
+				name = ParamType.getVal(annotation);
+			}
+		}
 	}
 	
 	/**
@@ -35,11 +45,7 @@ public class MethodParam {
 		if(StringUtils.isBlank(str)) {
 			return null;
 		}
-		return jsonConcert.toBean(str, type);
-	}
-
-	public Type getType() {
-		return type;
+		return HttpServer.server.getJson().toBean(str, type);
 	}
 
 	public ParamType getParamType() {

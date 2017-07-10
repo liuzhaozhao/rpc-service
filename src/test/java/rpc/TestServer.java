@@ -2,7 +2,7 @@ package rpc;
 
 import com.service.rpc.exception.RepeatedPathException;
 import com.service.rpc.serialize.FastJsonSerialize;
-import com.service.rpc.server.tcp.RpcServer;
+import com.service.rpc.server.rpc.RpcServer;
 
 import test.service.TestService;
 

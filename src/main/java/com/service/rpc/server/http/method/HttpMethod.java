@@ -15,20 +15,20 @@ import com.service.rpc.exception.RepeatedPathException;
 public class HttpMethod {
 	private static Logger log = Logger.getLogger(HttpMethod.class);
 	// 非匹配式url映射缓存
-	private static Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
+	private static Map<String, HttpMethodInfo> methods = new HashMap<String, HttpMethodInfo>();
 	// 动态匹配式url映射缓存(此处使用LinkedHashMap是为了调整匹配优先级，目前按照url长度匹配的，例如有两个动态url：/aa/{name}、/aa/{name1}-{name2}，此时/aa/111-222会匹配到第二个url
-	private static Map<String, MethodInfo> dynamicUrlmethods = new LinkedHashMap<String, MethodInfo>();
+	private static Map<String, HttpMethodInfo> dynamicUrlmethods = new LinkedHashMap<String, HttpMethodInfo>();
 	
 	/**
 	 * 根据Url获取需要反射调用的方法信息
 	 * @param url
 	 * @return
 	 */
-	public static MethodInfo getMethodInfo(String url, String httpType) {
+	public static HttpMethodInfo getMethodInfo(String url, String httpType) {
 		if(StringUtils.isBlank(url)) {
 			return null;
 		}
-		MethodInfo methodInfo = methods.get(url);
+		HttpMethodInfo methodInfo = methods.get(url);
 		if(methodInfo != null && methodInfo.isSupportHttpType(httpType)) {// 先精确匹配地址
 			return methodInfo;
 		}
@@ -53,7 +53,7 @@ public class HttpMethod {
 	 * 添加方法
 	 * @throws RepeatedPathException 
 	 */
-	public static synchronized void addMethodInfo(MethodInfo methodInfo) throws RepeatedPathException {
+	public static synchronized void addMethodInfo(HttpMethodInfo methodInfo) throws RepeatedPathException {
 		if(methodInfo == null) {
 			return;
 		}

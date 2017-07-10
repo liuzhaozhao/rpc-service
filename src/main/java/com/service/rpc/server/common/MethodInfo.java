@@ -1,4 +1,4 @@
-package com.service.rpc.server.tcp;
+package com.service.rpc.server.common;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -12,17 +12,15 @@ import com.service.rpc.server.invoke.BaseInvoke;
 import com.service.rpc.server.invoke.JavaInvoke;
 
 public class MethodInfo {
-	private Method method;
+	protected Method method;
 	private String methodStr;
 	private BaseInvoke invoke;// 反射调用类
-//	private ISerialize serialize;// 序列化类
 	private List<MethodParam> methodParams = new ArrayList<MethodParam>();// 方法对应的请求参数数组
 	
 	public MethodInfo(Method method, Object clsInstance) {
 		this.method = method;
 		this.methodStr = Utils.getMethodIdentify(method);
 		this.invoke = new JavaInvoke(method, clsInstance);// 默认使用java反射类
-//		this.serialize = new FstSerialize();// 默认使用FstSerialize做序列化
 		setMethodParam(); 
 	}
 	
@@ -34,16 +32,6 @@ public class MethodInfo {
 		this.invoke = invoke;
 		return this;
 	}
-	
-	/**
-	 * 外部可配置序列化类
-	 * 注意：如果使用json做序列化，需要对每个序列化的对象指定明确泛型（如果有的话）
-	 * @param serialize
-	 */
-//	public MethodInfo setSerialize(ISerialize serialize) {
-//		this.serialize = serialize;
-//		return this;
-//	}
 	
 	/**
 	 * 设置方法参数，如注解、参数类型

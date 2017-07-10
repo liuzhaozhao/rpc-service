@@ -1,4 +1,4 @@
-package com.service.rpc.server.tcp;
+package com.service.rpc.server.common;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -9,9 +9,9 @@ import java.lang.reflect.Type;
  *
  */
 public class MethodParam {
-	private Type type;// 方法参数Type类型（包含泛型信息） 
-	private Class<?> cls;// 方法参数Class类型
-	private Annotation[] annotations;// 方法参数注解
+	protected Type type;// 方法参数Type类型（包含泛型信息） 
+	protected Class<?> cls;// 方法参数Class类型
+	protected Annotation[] annotations;// 方法参数注解
 	
 	public MethodParam(Type type, Class<?> cls, Annotation[] annotations) {
 		this.type = type;
