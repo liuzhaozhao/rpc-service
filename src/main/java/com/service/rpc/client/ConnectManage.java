@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.service.rpc.transport.RpcRequest;
 
-public interface ClientConnect {
+public interface ConnectManage {
 	
 	/**
 	 * 更新连接池中的连接（外部触发，如zookeeper）

@@ -69,7 +69,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	        this.request = (HttpRequest) msg;
 	        this.headers = request.headers();
 	        this.url = Utils.getUrl(request.uri());
-	        System.err.println(this.url);
 	        this.httpType = HttpType.get(request.method().name());
 	        if(this.httpType == null) {
 	        	render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);

@@ -25,6 +25,7 @@ public class RpcResponse implements Serializable {
 	private String methodIdentify;// 方法唯一标识字符串
 //	private boolean isJson;// 响应数据是否是json传输，json数据特殊处理
 	private Object data;// 服务器响应数据
+	private Throwable error;// 异常
 	private String errorMsg;// 异常消息
 	
 	public RpcResponse() {}
@@ -35,6 +36,33 @@ public class RpcResponse implements Serializable {
 //	}
 	
 	public RpcResponse(RpcRequest request, int responseCode, Object data) {
+		this(request, responseCode, data, null, null);
+	}
+	
+	/**
+	 * 客户端异常使用
+	 * @param request
+	 * @param responseCode
+	 * @param data
+	 * @param error
+	 */
+	public RpcResponse(RpcRequest request, int responseCode, Throwable error) {
+		this(request, responseCode, null, error, error == null ? null : error.getMessage());
+	}
+	/**
+	 * 服务器端使用
+	 * 服务器端不直接使用Throwable的原因有两个：
+	 * 	1.使用fastJson时，无法反序列化Throwable对象；
+	 * 	2.Throwable序列化后数据量很大，不便于传输
+	 * @param request
+	 * @param responseCode
+	 * @param data
+	 * @param errorMsg
+	 */
+	public RpcResponse(RpcRequest request, int responseCode, String errorMsg) {
+		this(request, responseCode, null, null, errorMsg);
+	}
+	public RpcResponse(RpcRequest request, int responseCode, Object data, Throwable error, String errorMsg) {
 		if(request == null) {
 			throw new IllegalArgumentException("参数不能为null");
 		}
@@ -43,6 +71,8 @@ public class RpcResponse implements Serializable {
 		this.methodIdentify = request.getMethodIdentify();
 //		this.isJson = isJson;
 		this.data = data;
+		this.error = error;
+		this.errorMsg = errorMsg;
 	}
 
 	public int getResponseCode() {
@@ -76,20 +106,29 @@ public class RpcResponse implements Serializable {
 	public void setData(Object data) {
 		this.data = data;
 	}
-
-	public String getErrorMsg() {
-		return errorMsg;
-	}
-
-	public void setErrorMsg(String errorMsg) {
-		this.errorMsg = errorMsg;
-	}
+	
 	public String getMethodIdentify() {
 		return methodIdentify;
 	}
 	
 	public void setMethodIdentify(String methodIdentify) {
 		this.methodIdentify = methodIdentify;
+	}
+
+	public Throwable getError() {
+		return error;
+	}
+	
+	public void setError(Throwable error) {
+		this.error = error;
+	}
+	
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+	
+	public void setErrorMsg(String errorMsg) {
+		this.errorMsg = errorMsg;
 	}
 	
 }

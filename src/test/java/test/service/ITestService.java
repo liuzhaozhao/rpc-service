@@ -2,6 +2,8 @@ package test.service;
 
 import java.util.List;
 
+import service.DataBean;
+
 public interface ITestService {
 	public String testM();
 	public String testM(String arg);

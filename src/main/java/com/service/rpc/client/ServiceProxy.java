@@ -11,6 +11,7 @@ import com.service.rpc.common.Utils;
 import com.service.rpc.common.json.FastJson;
 import com.service.rpc.common.json.IJson;
 import com.service.rpc.transport.RpcRequest;
+import com.service.rpc.transport.RpcResponse;
 
 import javassist.util.proxy.MethodHandler;
 
@@ -26,10 +27,10 @@ public class ServiceProxy implements MethodHandler {
 	private static Map<String, String> methodStr = new HashMap<String, String>();// 缓存方法的描述
 	private static IJson json = new FastJson();
 	
-	private ClientConnect connect;
+	private ConnectManage connect;
 	private ResetReturn resetReturn;
 	
-	public ServiceProxy(ClientConnect connect, ResetReturn resetReturn) {
+	public ServiceProxy(ConnectManage connect, ResetReturn resetReturn) {
 		this.connect = connect;
 		this.resetReturn = resetReturn;
 	}
@@ -67,9 +68,22 @@ public class ServiceProxy implements MethodHandler {
 		RpcRequest request = new RpcRequest(identify, args);
 		RpcFuture future = connect.send(request);
 //		Object data = future.get(ServiceFactory.factory.getReadTimeoutMills(), TimeUnit.MILLISECONDS);
-		Object data = future.get();
-		if(ServiceFactory.factory.isEnableLog()) {
-			log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据："+json.toStr(future.getResponse()));
+		RpcResponse response = future.get();
+		Object data = null;
+		try{
+			if(response != null && response.getError() != null) {// 客户端异常
+				throw new RuntimeException(response.getError());
+			} else if (response != null && response.getResponseCode() == RpcResponse.CODE_SUCCESS) {
+				data = response.getData();
+			} else if (response != null && response.getErrorMsg() != null) {// 服务器端异常
+				throw new RuntimeException(response.getErrorMsg());
+			} else {
+				throw new RuntimeException("请求异常");
+			}
+		}finally {
+			if(ServiceFactory.factory.isEnableLog()) {
+				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据："+json.toStr(future.getResponse()));
+			}
 		}
 		if(resetReturn == null) {
 			return data;

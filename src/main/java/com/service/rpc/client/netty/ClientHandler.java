@@ -1,9 +1,11 @@
 package com.service.rpc.client.netty;
 
 import java.net.SocketAddress;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -19,14 +21,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-/**
- * Created by luxiaoxun on 2016-03-14.
- */
 public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private static Logger log = Logger.getLogger(ClientHandler.class);
     
-    private ConcurrentHashMap<String, RpcFuture> pendingRequest = new ConcurrentHashMap<String, RpcFuture>();// 所有未响应（未完成）的请求
-
+    public ConcurrentHashMap<String, RpcFuture> pendingRequest = new ConcurrentHashMap<String, RpcFuture>();// 所有未响应（未完成）的请求
+    
     private volatile Channel channel;
     private SocketAddress remotePeer;
 
@@ -42,6 +41,27 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         this.remotePeer = this.channel.remoteAddress();
+        new Thread(){// 另起线程检测超时响应的请求
+        	@Override
+        	public void run() {
+        		while(true) {
+        			try{// 防止异常退出检测
+        				for(RpcFuture rpcFuture : pendingRequest.values()) {
+        					if((System.currentTimeMillis() - rpcFuture.getStartRequest().getTime()) > ServiceFactory.factory.getReadTimeoutMills()) {
+        						setResponse(new RpcResponse(rpcFuture.getRequest(), RpcResponse.CODE_CLIENT_EXCEPTION, new TimeoutException("获取数据超时")));
+        					}
+        				}
+        			}catch(Exception e) {
+        				log.warn("检测超时响应异常", e);
+        			}
+        			try {
+        				Thread.sleep(2000);
+        			} catch (InterruptedException e) {
+        				e.printStackTrace();
+        			}
+        		}
+        	}
+        }.start();
     }
 
     @Override
@@ -52,9 +72,12 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
-        String requestId = response.getRequestId();
-//        System.err.println(requestId+"	响应数据已收到:"+new FastJson().toStr(response));
-        RpcFuture rpcFuture = pendingRequest.get(requestId);
+    	setResponse(response);
+    }
+    
+    private void setResponse(RpcResponse response) {
+    	String requestId = response.getRequestId();
+    	RpcFuture rpcFuture = pendingRequest.get(requestId);
         if (rpcFuture != null) {
         	pendingRequest.remove(requestId);
             rpcFuture.setResponse(response);
@@ -88,13 +111,23 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     	request.setRequestId(getRequestId());
         final CountDownLatch latch = new CountDownLatch(1);
         RpcFuture rpcFuture = new RpcFuture(ServiceFactory.factory.getReadTimeoutMills(), request);
+        rpcFuture.setStartRequest(new Date());
         pendingRequest.put(request.getRequestId(), rpcFuture);
-//        System.err.println(request.getRequestId()+"	请求准备发送");
         channel.writeAndFlush(request)
 	        .addListener(new ChannelFutureListener() {
 	            @Override
 	            public void operationComplete(ChannelFuture future) {
-//	            	System.err.println(request.getRequestId()+"	请求已发送出");
+	            	if(!future.isSuccess()) {// 客户端异常后需要执行rpcFuture.setResponse(response)否则会一直等待响应
+	            		Throwable error = null;
+	            		if(future.cause() != null) {
+	            			error = future.cause();
+	            			log.warn(error.getMessage(), future.cause());
+	            		} else {
+	            			error = new RuntimeException("发送请求异常");
+	            			log.warn(error.getMessage());
+	            		}
+	            		setResponse(new RpcResponse(request, RpcResponse.CODE_CLIENT_EXCEPTION, error));
+	            	}
 	                latch.countDown();
 	            }
 	        });
@@ -105,4 +138,6 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         }
         return rpcFuture;
     }
+    
+    
 }

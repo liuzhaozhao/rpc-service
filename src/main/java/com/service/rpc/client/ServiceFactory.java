@@ -17,12 +17,12 @@ public class ServiceFactory {
 	
 //	private Logger log = Logger.getLogger(this.getClass());
 	private Map<Class<?>, Object> proxyService = new HashMap<Class<?>, Object>();// 接口代理实例缓存
-	private ClientConnect connect = NettyConnect.getInstance();
+	private ConnectManage connect = NettyConnect.getInstance();
 	private ISerialize serialize = new FstSerialize();
 	private String[] serverAddress;
 	private ResetReturn resetReturn;
 	private boolean isDone = false;
-	private int readTimeoutMills = 15000;// 读取响应超时时间
+	private int readTimeoutMills = 20000;// 读取响应超时时间
 	private boolean enableLog = true;
 	// 禁止外部创建实例
 	private ServiceFactory(){}
@@ -32,7 +32,7 @@ public class ServiceFactory {
 		return this;
 	}
 	
-	public ServiceFactory setConnect(ClientConnect connect) {
+	public ServiceFactory setConnect(ConnectManage connect) {
 		Utils.checkArgument(connect != null, "客户端连接不能为null");
 		this.connect = connect;
 		return this;

@@ -85,6 +85,8 @@
 	    <artifactId>fst</artifactId>
 	    <version>2.50</version>
 	</dependency>
+	
+	
 	<dependency>
 	    <groupId>com.jfinal</groupId>
 	    <artifactId>jfinal</artifactId>
@@ -103,7 +105,12 @@
 	    <version>20.0</version>
 	    <scope>test</scope>
 	</dependency>
-    
+    <dependency>
+	    <groupId>cn.jugame</groupId>
+	    <artifactId>http-service</artifactId>
+	    <version>1.0.3</version>
+	    <scope>test</scope>
+	</dependency>
     
   </dependencies>
 </project>

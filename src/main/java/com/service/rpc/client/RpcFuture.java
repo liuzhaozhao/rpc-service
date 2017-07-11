@@ -1,5 +1,6 @@
 package com.service.rpc.client;
 
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ public class RpcFuture implements Future<Object> {
 	private Sync sync;
 	private RpcRequest request;
 	private RpcResponse response;
+	private Date startRequest;// 开始请求时间，用于计算响应超时
 	
 	public RpcFuture(int readTimeoutMills, RpcRequest request) {
 //		this.readTimeoutMills = readTimeoutMills;
@@ -26,18 +28,15 @@ public class RpcFuture implements Future<Object> {
     }
 	
 	@Override
-    public Object get() throws InterruptedException, ExecutionException {
+    public RpcResponse get() throws InterruptedException, ExecutionException {
         sync.acquire(-1);
-        if (response == null || response.getResponseCode() != RpcResponse.CODE_SUCCESS) {
-        	return null;
-        } else {
-        	return this.response.getData();
-        }
+        return response;
     }
 	
 	/**
-	 * 有些问题
+	 * 有些问题，sync.tryAcquireNanos不会等待，TODO:不要使用
 	 */
+	@Deprecated
 	@Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         boolean success = sync.tryAcquireNanos(-1, unit.toNanos(timeout));
@@ -97,4 +96,16 @@ public class RpcFuture implements Future<Object> {
             return getState() == done;
         }
     }
+	
+	public RpcRequest getRequest() {
+		return request;
+	}
+	
+	public void setStartRequest(Date startRequest) {
+		this.startRequest = startRequest;
+	}
+	
+	public Date getStartRequest() {
+		return startRequest;
+	}
 }

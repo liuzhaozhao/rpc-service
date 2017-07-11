@@ -1,4 +1,4 @@
-package test.service;
+package service;
 
 import java.io.Serializable;
 
@@ -13,8 +13,7 @@ public class DataBean<T> implements Serializable {
 	private T data;
 	private String msg = "";
 
-	public DataBean() {
-	}
+	public DataBean() {}
 
 	/**
 	 * 初始化一个失败的DataBean
@@ -46,9 +45,9 @@ public class DataBean<T> implements Serializable {
 		return obj;
 	}
 
-	public boolean isSuccessCode() {
-		return this.code == successCode;
-	}
+//	public boolean isSuccessCode() {
+//		return this.code == successCode;
+//	}
 
 	public DataBean<T> setData(T data) {
 		this.data = data;
@@ -89,6 +88,10 @@ public class DataBean<T> implements Serializable {
 	public void setSuccessCode(int successCode) {
 		this.successCode = successCode;
 //		this.code = successCode;
+	}
+	
+	public int getSuccessCode() {
+		return successCode;
 	}
 
 	public int getCode() {

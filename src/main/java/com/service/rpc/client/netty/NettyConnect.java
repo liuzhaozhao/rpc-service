@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.service.rpc.client.ClientConnect;
+import com.service.rpc.client.ConnectManage;
 import com.service.rpc.client.RpcFuture;
 import com.service.rpc.transport.RpcRequest;
 
@@ -25,7 +25,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class NettyConnect implements ClientConnect {
+public class NettyConnect implements ConnectManage {
 	private Logger log = Logger.getLogger(this.getClass());
 	private volatile static NettyConnect connect;
 	private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
