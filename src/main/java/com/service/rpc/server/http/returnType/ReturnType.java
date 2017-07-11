@@ -5,11 +5,13 @@ import javax.ws.rs.core.MediaType;
 import com.service.rpc.common.json.FastJson;
 
 public enum ReturnType {
-	JSON(MediaType.APPLICATION_JSON+";"+MediaType.CHARSET_PARAMETER+"=utf-8", new JsonReturn(new FastJson())),
-	XML(MediaType.APPLICATION_XML+";"+MediaType.CHARSET_PARAMETER+"=utf-8", new XmlReturn());
+	JSON(ReturnType.JSON_TYPE, new JsonReturn(new FastJson())),
+	XML(ReturnType.XML_TYPE, new XmlReturn());
+	public static final String JSON_TYPE = MediaType.APPLICATION_JSON+";"+MediaType.CHARSET_PARAMETER+"=utf-8";
+	public static final String XML_TYPE = MediaType.APPLICATION_XML+";"+MediaType.CHARSET_PARAMETER+"=utf-8";
 	
 	private String type;
-	private IReturn iReturn;
+	private IReturn iReturn; 
 	
 	private ReturnType(String type, IReturn iReturn) {
 		this.type = type;
@@ -22,5 +24,14 @@ public enum ReturnType {
 	
 	public byte[] getReturnData(Object obj) {
 		return iReturn.toByte(obj);
+	}
+	
+	public static final ReturnType get(String type) {
+		for(ReturnType returnType : ReturnType.values()) {
+			if(returnType.getType().equals(type)) {
+				return returnType;
+			}
+		}
+		return null;
 	}
 }

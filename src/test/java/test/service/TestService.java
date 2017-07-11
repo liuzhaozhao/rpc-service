@@ -9,10 +9,14 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import com.service.rpc.server.http.returnType.ReturnType;
+
 @Path("/testService")
-//@Produces(MediaType.APPLICATION_JSON+";"+MediaType.CHARSET_PARAMETER+"=utf-8")// 设置返回值类型
+// @Produces(MediaType.APPLICATION_JSON+";"+MediaType.CHARSET_PARAMETER+"=utf-8")// 标注用于指定响应体的数据格式（MIME 类型）
+// @Consumes 标注用于指定请求体的数据格式
 public class TestService implements ITestService {
 	
 	public String testM(String arg) {
@@ -42,6 +46,7 @@ public class TestService implements ITestService {
 	}
 	
 	@POST @Path("/test_1/{arg1}")
+	@Produces(ReturnType.JSON_TYPE)
 	public DataBean<List<String>> test_1(@PathParam("arg1") int arg1, @QueryParam("arg") @DefaultValue("1") String arg, 
 			@FormParam("arg3") @DefaultValue("3") Integer arg3, @BeanParam DataBean<List<String>> dataBean) {
 //		if(dataBean != null) {

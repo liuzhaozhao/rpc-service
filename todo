@@ -2,3 +2,4 @@
 性能测试
 http服务的https支持，安全校验
 多json支持，如：jackson
+中文编码测试

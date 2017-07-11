@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,13 +29,14 @@ public class HttpMethodInfo extends MethodInfo {
 	
 	private List<String> supportHttpType = new ArrayList<String>();// http支持的请求类型，具体类型见HttpType.java
 	// 暂时不实现返回值类型配置，统一使用json
-	private ReturnType returnType = ReturnType.JSON;// 方法返回数据类型，可支持json、xml，具体参考：javax.ws.rs.core.MediaType类，根据该值生成返回值
+	private ReturnType returnType = ReturnType.JSON;// 方法返回数据类型，通过@Produces配置，可支持json、xml，具体参考：javax.ws.rs.core.MediaType类，根据该值生成返回值
 	
 	public HttpMethodInfo(Method method, Object clsInstance) throws NoPathException {
 		super(method, clsInstance);
 		setUrlPath();
 		checkUrlPathVar();// 必须放到setUrlPath后
 		setSupportHttpType();
+		setReturnType();
 	}
 	
 	/**
@@ -99,6 +101,14 @@ public class HttpMethodInfo extends MethodInfo {
 		if(supportHttpType.size() == 0) {// 如果没有配置支持的http类型，则支持所有类型
 			supportHttpType.addAll(HttpType.getTypes());
 		}
+	}
+	
+	public void setReturnType() {
+		Produces produces = method.getAnnotation(Produces.class);
+		if(produces == null || produces.value().length == 0) {// 未配置返回值类型，使用默认类型
+			return;
+		}
+		returnType = ReturnType.get(produces.value()[0]);
 	}
 	
 	@Override
