@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import com.service.rpc.client.RpcFuture;
 import com.service.rpc.client.ServiceFactory;
-import com.service.rpc.common.json.FastJson;
 import com.service.rpc.transport.RpcRequest;
 import com.service.rpc.transport.RpcResponse;
 

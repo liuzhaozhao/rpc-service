@@ -118,6 +118,7 @@ public class NettyConnect implements ClientConnect {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public RpcFuture send(RpcRequest request) {
 		CopyOnWriteArrayList<ClientHandler> handlers = (CopyOnWriteArrayList<ClientHandler>) this.connectedHandlers.clone();
