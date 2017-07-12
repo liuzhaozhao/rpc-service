@@ -87,12 +87,12 @@
 	    <version>2.50</version>
 	</dependency>
 	
-<!-- 	<dependency> -->
-<!-- 	    <groupId>com.jfinal</groupId> -->
-<!-- 	    <artifactId>jfinal</artifactId> -->
-<!-- 	    <version>3.1</version> -->
-<!-- 	    <scope>test</scope> -->
-<!-- 	</dependency> -->
+	<dependency>
+	    <groupId>com.jfinal</groupId>
+	    <artifactId>jfinal</artifactId>
+	    <version>3.1</version>
+	    <scope>test</scope>
+	</dependency>
 	<dependency>
 	    <groupId>junit</groupId>
 	    <artifactId>junit</artifactId>
