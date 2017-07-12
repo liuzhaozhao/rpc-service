@@ -5,12 +5,12 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
 import com.service.rpc.client.RpcFuture;
 import com.service.rpc.client.ServiceFactory;
+import com.service.rpc.exception.ResponseTimeoutException;
 import com.service.rpc.transport.RpcRequest;
 import com.service.rpc.transport.RpcResponse;
 
@@ -48,7 +48,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         			try{// 防止异常退出检测
         				for(RpcFuture rpcFuture : pendingRequest.values()) {
         					if((System.currentTimeMillis() - rpcFuture.getStartRequest().getTime()) > ServiceFactory.factory.getReadTimeoutMills()) {
-        						setResponse(new RpcResponse(rpcFuture.getRequest(), RpcResponse.CODE_CLIENT_EXCEPTION, new TimeoutException("获取数据超时")));
+        						setResponse(new RpcResponse(rpcFuture.getRequest(), RpcResponse.CODE_CLIENT_EXCEPTION, new ResponseTimeoutException("获取数据超时")));
         					}
         				}
         			}catch(Exception e) {

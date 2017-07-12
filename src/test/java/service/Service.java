@@ -38,10 +38,10 @@ public class Service implements IService {
 	@Override
 	public String test3() {
 		System.err.println("test3()");
-		if(1 == 1) {
-			throw new RuntimeException("测试异常");
-		}
-		System.err.println(1/0);
+//		if(1 == 1) {
+//			throw new RuntimeException("测试异常");
+//		}
+//		System.err.println(1/0);
 		return "test3中文";
 	}
 

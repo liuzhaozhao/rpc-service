@@ -10,6 +10,7 @@ import com.service.rpc.common.HashKit;
 import com.service.rpc.common.Utils;
 import com.service.rpc.common.json.FastJson;
 import com.service.rpc.common.json.IJson;
+import com.service.rpc.exception.ServerRuntimeException;
 import com.service.rpc.transport.RpcRequest;
 import com.service.rpc.transport.RpcResponse;
 
@@ -70,19 +71,21 @@ public class ServiceProxy implements MethodHandler {
 //		Object data = future.get(ServiceFactory.factory.getReadTimeoutMills(), TimeUnit.MILLISECONDS);
 		RpcResponse response = future.get();
 		Object data = null;
+		boolean warnError = false;
 		try{
 			if(response != null && response.getError() != null) {// 客户端异常
 				throw new RuntimeException(response.getError());
 			} else if (response != null && response.getResponseCode() == RpcResponse.CODE_SUCCESS) {
 				data = response.getData();
 			} else if (response != null && response.getErrorMsg() != null) {// 服务器端异常
-				throw new RuntimeException(response.getErrorMsg());
-			} else {
+				throw new ServerRuntimeException(response.getErrorMsg());
+			} else {// 这里暂时没有情况执行
+				warnError = false;
 				throw new RuntimeException("请求异常");
 			}
 		}finally {
 			if(ServiceFactory.factory.isEnableLog()) {
-				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据："+json.toStr(future.getResponse()));
+				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据"+(warnError?"(异常数据无错误原因)":"")+"："+json.toStr(future.getResponse()));
 			}
 		}
 		if(resetReturn == null) {
