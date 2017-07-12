@@ -29,7 +29,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class RpcServer {
-	public static RpcServer server = new RpcServer();
+	private static RpcServer server = new RpcServer();
 	
 	private static Logger log = Logger.getLogger(RpcServer.class);
 	private Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
@@ -50,11 +50,12 @@ public class RpcServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		this.port = port;
-		this.classes = classes;
-		initMethod();
-		startServer();
+	public static RpcServer start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		server.port = port;
+		server.classes = classes;
+		server.initMethod();
+		server.startServer();
+		return server;
 	}
 	
 	public RpcServer setSerialize(ISerialize serialize) {
@@ -68,24 +69,24 @@ public class RpcServer {
 		return this;
 	}
 	
-	public boolean isEnableLog() {
-		return enableLog;
+	public static boolean isEnableLog() {
+		return server.enableLog;
 	}
 	
 	/**
 	 * 关闭服务
 	 */
-	public void stop() {
+	public static void stop() {
 		try{
-			bossGroup.shutdownGracefully();
-			workerGroup.shutdownGracefully();
+			server.bossGroup.shutdownGracefully();
+			server.workerGroup.shutdownGracefully();
 		} catch (Exception e) {
 			log.warn("关闭http服务异常", e);
 		}
 	}
 	
-	public MethodInfo getMethodInfo(String identify) {
-		return methods.get(identify);
+	public static MethodInfo getMethodInfo(String identify) {
+		return server.methods.get(identify);
 	}
 	
 	/**

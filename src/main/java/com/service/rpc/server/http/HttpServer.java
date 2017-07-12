@@ -24,7 +24,8 @@ import io.netty.handler.logging.LoggingHandler;
 
 public class HttpServer {
 	private static Logger log = Logger.getLogger(HttpServer.class);
-	public static HttpServer server = new HttpServer();
+	private static HttpServer server = new HttpServer();
+	
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 	private int port;
@@ -41,20 +42,17 @@ public class HttpServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		this.port = port;
-		this.classes = classes;
-		initMethod();
-		startServer();
+	public static HttpServer start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		server.port = port;
+		server.classes = classes;
+		server.initMethod();
+		server.startServer();
+		return server;
 	}
 	
 	public HttpServer setEnableLog(boolean enableLog) {
 		this.enableLog = enableLog;
 		return this;
-	}
-	
-	public boolean isEnableLog() {
-		return enableLog;
 	}
 	
 	public HttpServer setJson(IJson json) {
@@ -63,17 +61,22 @@ public class HttpServer {
 		return this;
 	}
 	
-	public IJson getJson() {
-		return json;
+	
+	public static boolean isEnableLog() {
+		return server.enableLog;
+	}
+	
+	public static IJson getJson() {
+		return server.json;
 	}
 	
 	/**
 	 * 关闭服务
 	 */
-	public void stop() {
+	public static void stop() {
 		try{
-			bossGroup.shutdownGracefully();
-			workerGroup.shutdownGracefully();
+			server.bossGroup.shutdownGracefully();
+			server.workerGroup.shutdownGracefully();
 		} catch (Exception e) {
 			log.warn("关闭http服务异常", e);
 		}

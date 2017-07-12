@@ -19,7 +19,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     @Override
     public void channelRead0(final ChannelHandlerContext ctx,final RpcRequest request) {
     	long startTime = System.currentTimeMillis();
-    	MethodInfo methodInfo = RpcServer.server.getMethodInfo(request.getMethodIdentify());
+    	MethodInfo methodInfo = RpcServer.getMethodInfo(request.getMethodIdentify());
     	RpcResponse response = null;
     	if(methodInfo == null) {
     		response = new RpcResponse(request, RpcResponse.CODE_NO_METHOD, "不存在该服务");
@@ -32,7 +32,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 				log.warn("获取方法调用数据异常", e);
 			}
     	}
-    	if(RpcServer.server.isEnableLog()) {
+    	if(RpcServer.isEnableLog()) {
     		log.info("接收请求："+methodInfo.getMethodStr()+"，耗时："+(System.currentTimeMillis() - startTime)+"毫秒，请求值："+JsonUtil.toJson(request)+"，返回值："+JsonUtil.toJson(response));
     	}
     	ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {

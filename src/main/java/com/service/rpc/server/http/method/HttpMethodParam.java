@@ -45,7 +45,7 @@ public class HttpMethodParam extends MethodParam {
 		if(StringUtils.isBlank(str)) {
 			return null;
 		}
-		return HttpServer.server.getJson().toBean(str, type);
+		return HttpServer.getJson().toBean(str, type);
 	}
 
 	public ParamType getParamType() {

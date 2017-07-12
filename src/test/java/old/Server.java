@@ -31,7 +31,7 @@ public class Server {
 	 * @throws InterruptedException 
 	 */
 	public static void startHttp(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		HttpServer.server.start(port, classes);
+		HttpServer.start(port, classes);
 	}
 	
 	/**
@@ -45,6 +45,6 @@ public class Server {
 	 * 关闭服务(停止对外提供http、rpc服务)
 	 */
 	public static void stop() {
-		HttpServer.server.stop();
+		HttpServer.stop();
 	}
 }
