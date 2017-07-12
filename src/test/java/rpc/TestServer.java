@@ -1,9 +1,5 @@
 package rpc;
 
-import java.rmi.Naming;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-
 import org.jupiter.common.util.SystemPropertyUtil;
 import org.jupiter.monitor.MonitorServer;
 import org.jupiter.rpc.DefaultServer;
@@ -24,17 +20,17 @@ public class TestServer {
 	public void start() throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
 //		RpcServer.get().start(8809, TestService.class);
 		// .setSerialize(new FastJsonSerialize())
-		RpcServer.get().start(8808, Service.class);
+		RpcServer.get().start(8809, Service.class);
 		
 	}
 	
-	@org.junit.Test
-	public void startRmi() throws Exception {
-		LocateRegistry.createRegistry(8888); 
-		Naming.bind("rmi://localhost:8888/Service",new Service()); 
-		System.err.println("服务器已启动");
-		Thread.sleep(1000000);
-	}
+//	@org.junit.Test
+//	public void startRmi() throws Exception {
+//		LocateRegistry.createRegistry(8888); 
+//		Naming.bind("rmi://localhost:8888/Service",new Service()); 
+//		System.err.println("服务器已启动");
+//		Thread.sleep(1000000);
+//	}
 	
 	@org.junit.Test
 	public void startMotan() throws InterruptedException {

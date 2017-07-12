@@ -15,16 +15,20 @@ public class TestClient2 {
 	
 	private IService getService() throws Exception {
 		// .setSerialize(new FastJsonSerialize())
-//		ServiceFactory.get().init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
-//		return ServiceFactory.get(IService.class);
+		com.service.rpc.client.ServiceFactory.get().init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
+		return com.service.rpc.client.ServiceFactory.get(IService.class);
+		
 		
 //		cn.jugame.http.client.ServiceFactory.ServiceFactory.factory.init(new ServiceSetting("http://localhost:9091", "code", "key").setConnectTimeout(100000).setReadTimeout(100000));
 //		return cn.jugame.http.client.ServiceFactory.ServiceFactory.factory.get(IService.class);
 		
+		
 //		ApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:motan_client.xml");
 //		return (IService) ctx.getBean("service");
 		
-		return (IService) Naming.lookup("rmi://localhost:8888/Service");
+		
+//		return (IService) Naming.lookup("rmi://localhost:8888/Service");
+		
 		
 //		int processors = Runtime.getRuntime().availableProcessors();// CPU核心数量，用于初始化数据传输渠道
 //		JClient client = new DefaultClient().withConnector(new JNettyTcpConnector(processors + 1));
@@ -73,24 +77,12 @@ public class TestClient2 {
 		int threadNum = 100;
 		List<Thread> ts = new ArrayList<>();
 		for(int i=0; i<threadNum; i++) {
-//			ts.add(new Thread(() -> {
-//				service.test2("arg1", 1, 1.23, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
-//			}));
-			
 			ts.add(new Thread(() -> {
-				try{
-					service.test3();
-				}catch(Exception e) {
-					System.err.println(e.getMessage());
-				}
+				service.test3();
 			}));
 			
 			ts.add(new Thread(() -> {
-				try {
-					service.test4("arg12", 12, 1.234, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+				service.test4("arg12", 12, 1.234, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
 			}));
 		}
 		for(Thread t : ts) {
