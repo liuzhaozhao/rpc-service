@@ -15,8 +15,8 @@ public class TestClient2 {
 	
 	private IService getService() throws InstantiationException, IllegalAccessException {
 		// .setSerialize(new FastJsonSerialize())
-		ServiceFactory.factory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
-		return ServiceFactory.factory.get(IService.class);
+		ServiceFactory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"}).setSerialize(new FastJsonSerialize());
+		return ServiceFactory.get(IService.class);
 		
 //		cn.jugame.http.client.ServiceFactory.ServiceFactory.factory.init(new ServiceSetting("http://localhost:9091", "code", "key").setConnectTimeout(100000).setReadTimeout(100000));
 //		return cn.jugame.http.client.ServiceFactory.ServiceFactory.factory.get(IService.class);
@@ -49,10 +49,10 @@ public class TestClient2 {
 	@org.junit.Test
 	public void testThread() throws InstantiationException, IllegalAccessException, InterruptedException {
 		IService service = getService();
-//		service.test3();// 预热
+		service.test3();// 预热
 		long startTime = System.currentTimeMillis();
 		
-		int threadNum = 10;
+		int threadNum = 100;
 		List<Thread> ts = new ArrayList<>();
 		for(int i=0; i<threadNum; i++) {
 //			ts.add(new Thread(() -> {

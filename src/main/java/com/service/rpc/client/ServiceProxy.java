@@ -84,7 +84,7 @@ public class ServiceProxy implements MethodHandler {
 				throw new RuntimeException("请求异常");
 			}
 		}finally {
-			if(ServiceFactory.factory.isEnableLog()) {
+			if(ServiceFactory.isEnableLog()) {
 				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据"+(warnError?"(异常数据无错误原因)":"")+"："+json.toStr(future.getResponse()));
 			}
 		}

@@ -47,7 +47,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         		while(true) {
         			try{// 防止异常退出检测
         				for(RpcFuture rpcFuture : pendingRequest.values()) {
-        					if((System.currentTimeMillis() - rpcFuture.getStartRequest().getTime()) > ServiceFactory.factory.getReadTimeoutMills()) {
+        					if((System.currentTimeMillis() - rpcFuture.getStartRequest().getTime()) > ServiceFactory.getReadTimeoutMills()) {
         						setResponse(new RpcResponse(rpcFuture.getRequest(), RpcResponse.CODE_CLIENT_EXCEPTION, new ResponseTimeoutException("获取数据超时")));
         					}
         				}
@@ -55,7 +55,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         				log.warn("检测超时响应异常", e);
         			}
         			try {
-        				Thread.sleep(2000);
+        				Thread.sleep(500);
         			} catch (InterruptedException e) {
         				e.printStackTrace();
         			}
@@ -110,7 +110,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     public RpcFuture send(RpcRequest request) {
     	request.setRequestId(getRequestId());
         final CountDownLatch latch = new CountDownLatch(1);
-        RpcFuture rpcFuture = new RpcFuture(ServiceFactory.factory.getReadTimeoutMills(), request);
+        RpcFuture rpcFuture = new RpcFuture(ServiceFactory.getReadTimeoutMills(), request);
         rpcFuture.setStartRequest(new Date());
         pendingRequest.put(request.getRequestId(), rpcFuture);
         channel.writeAndFlush(request)

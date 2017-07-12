@@ -12,8 +12,8 @@ public class TestServer {
 	@org.junit.Test
 	public void start() throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
 //		RpcServer.server.start(8809, TestService.class);
-		//.setSerialize(new FastJsonSerialize())
-		RpcServer.server.start(8808, Service.class);
+		//
+		RpcServer.server.setSerialize(new FastJsonSerialize()).start(8808, Service.class);
 		
 	}
 	

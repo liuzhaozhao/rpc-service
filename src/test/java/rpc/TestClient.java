@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.service.rpc.client.ServiceFactory;
-import com.service.rpc.serialize.FastJsonSerialize;
 
 import service.DataBean;
 import test.service.ITestService;
@@ -14,8 +13,8 @@ public class TestClient {
 	@org.junit.Test
 	public void start() throws InstantiationException, IllegalAccessException {
 		// .setSerialize(new FastJsonSerialize())
-		ServiceFactory.factory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
-		ITestService service = ServiceFactory.factory.get(ITestService.class);
+		ServiceFactory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
+		ITestService service = ServiceFactory.get(ITestService.class);
 		System.err.println(service.testM());
 		System.err.println(service.testM("arg1"));
 		System.err.println(service.testM(1, "arg2"));
@@ -29,8 +28,8 @@ public class TestClient {
 	
 	@org.junit.Test
 	public void testThread() throws InstantiationException, IllegalAccessException, InterruptedException {
-		ServiceFactory.factory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
-		ITestService service = ServiceFactory.factory.get(ITestService.class);
+		ServiceFactory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
+		ITestService service = ServiceFactory.get(ITestService.class);
 		System.err.println(service.testM());
 		long startTime = System.currentTimeMillis();
 		

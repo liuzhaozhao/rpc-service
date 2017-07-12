@@ -13,7 +13,7 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 public class ServiceFactory {
-	public static ServiceFactory factory = new ServiceFactory();// 客户端静态调用
+	private static ServiceFactory factory = new ServiceFactory();// 客户端静态调用
 	
 //	private Logger log = Logger.getLogger(this.getClass());
 	private Map<Class<?>, Object> proxyService = new HashMap<Class<?>, Object>();// 接口代理实例缓存
@@ -27,9 +27,9 @@ public class ServiceFactory {
 	// 禁止外部创建实例
 	private ServiceFactory(){}
 	
-	public ServiceFactory init(String[] serverAddress) {
-		this.serverAddress = serverAddress;
-		return this;
+	public static ServiceFactory init(String[] serverAddress) {
+		factory.serverAddress = serverAddress;
+		return factory;
 	}
 	
 	public ServiceFactory setConnect(ConnectManage connect) {
@@ -49,27 +49,15 @@ public class ServiceFactory {
 		return this;
 	}
 	
-	public ISerialize getSerialize() {
-		return serialize;
-	}
-	
 	public ServiceFactory setReadTimeoutMills(int readTimeoutMills) {
 		Utils.checkArgument(readTimeoutMills > 0, "读超时不能小于0");
 		this.readTimeoutMills = readTimeoutMills;
 		return this;
 	}
 	
-	public int getReadTimeoutMills() {
-		return readTimeoutMills;
-	}
-	
 	public ServiceFactory setEnableLog(boolean enableLog) {
 		this.enableLog = enableLog;
 		return this;
-	}
-	
-	public boolean isEnableLog() {
-		return enableLog;
 	}
 	
 	/**
@@ -83,14 +71,26 @@ public class ServiceFactory {
 		connect.updateConnect(Arrays.asList(serverAddress));
 	}
 	
+	public static ISerialize getSerialize() {
+		return factory.serialize;
+	}
+	
+	public static int getReadTimeoutMills() {
+		return factory.readTimeoutMills;
+	}
+	
+	public static boolean isEnableLog() {
+		return factory.enableLog;
+	}
+	
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<T> cls) throws InstantiationException, IllegalAccessException {
-		Utils.checkArgument(serverAddress != null && serverAddress.length > 0, "未初始化服务地址，请先执行init方法");
-		if(!isDone) {
-			done();
+	public static <T> T get(Class<T> cls) throws InstantiationException, IllegalAccessException {
+		Utils.checkArgument(factory.serverAddress != null && factory.serverAddress.length > 0, "未初始化服务地址，请执行init方法");
+		if(!factory.isDone) {
+			factory.done();
 		}
 		Utils.validateServiceInterface(cls);
-		Object instance = proxyService.get(cls);
+		Object instance = factory.proxyService.get(cls);
 		if (instance != null) {// 缓存中已存在改实例则直接返回
 			return (T) instance;
 		}
@@ -98,8 +98,8 @@ public class ServiceFactory {
 		proxyFactory.setInterfaces(new Class[] { cls });// 指定接口
 		Class<?> proxyClass = proxyFactory.createClass();
 		T service = (T) proxyClass.newInstance();// 设置Handler处理器
-		((ProxyObject) service).setHandler(new ServiceProxy(connect, resetReturn));// 所有服务代理使用一个代理实例，TODO 需测试并发
-		proxyService.put(cls, service);
+		((ProxyObject) service).setHandler(new ServiceProxy(factory.connect, factory.resetReturn));// 所有服务代理使用一个代理实例，TODO 需测试并发
+		factory.proxyService.put(cls, service);
 		return service;
 	}
 }

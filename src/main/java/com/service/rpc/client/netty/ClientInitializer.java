@@ -13,7 +13,7 @@ public class ClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline cp = socketChannel.pipeline();
-        ISerialize serialize = ServiceFactory.factory.getSerialize();
+        ISerialize serialize = ServiceFactory.getSerialize();
         cp.addLast(new ClientEncoder(serialize));
         cp.addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
         cp.addLast(new ClientDecoder(serialize));
