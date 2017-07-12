@@ -31,7 +31,8 @@ public class HttpServer {
 	private int port;
 	private Class<?>[] classes;
 	private boolean enableLog = true;
-	private IJson json = new FastJson();
+	private IJson json;
+	private boolean serverStart = false;
 	
 	private HttpServer() {}
 	
@@ -46,11 +47,16 @@ public class HttpServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+	public synchronized void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		Utils.checkStatus(!serverStart, "服务已启动，不可以重复调用");
 		this.port = port;
 		this.classes = classes;
+		if(json == null) {
+			json = new FastJson();
+		}
 		initMethod();
 		startServer();
+		serverStart = true;
 	}
 	
 	public HttpServer setEnableLog(boolean enableLog) {
@@ -60,6 +66,7 @@ public class HttpServer {
 	
 	public HttpServer setJson(IJson json) {
 		Utils.checkArgument(json != null, "序列化配置不能为null");
+		Utils.checkStatus(!serverStart, "服务已启动，不可以设置序列化");
 		this.json = json;
 		return this;
 	}

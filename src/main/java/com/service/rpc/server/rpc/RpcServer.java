@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.jfinal.kit.HashKit;
+import com.service.rpc.common.HashKit;
 import com.service.rpc.common.Utils;
 import com.service.rpc.exception.RepeatedPathException;
 import com.service.rpc.serialize.FstSerialize;
@@ -35,10 +35,11 @@ public class RpcServer {
 	private Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
 	private int port;
 	private Class<?>[] classes;
-	private ISerialize serialize = new FstSerialize();
+	private ISerialize serialize;
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 	private boolean enableLog = true;
+	private boolean serverStart = false;
 	
 	private RpcServer() {}
 	
@@ -53,15 +54,21 @@ public class RpcServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+	public synchronized void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		Utils.checkStatus(!serverStart, "服务已启动，不可以重复调用");
 		this.port = port;
 		this.classes = classes;
+		if(serialize == null) {
+			serialize = new FstSerialize();
+		}
 		initMethod();
 		startServer();
+		serverStart = true;
 	}
 	
 	public RpcServer setSerialize(ISerialize serialize) {
 		Utils.checkArgument(serialize != null, "序列化配置不能为null");
+		Utils.checkStatus(!serverStart, "服务已启动，不可以设置序列化");
 		this.serialize = serialize;
 		return this;
 	}
@@ -79,6 +86,9 @@ public class RpcServer {
 	 * 关闭服务
 	 */
 	public static void stop() {
+		if(!server.serverStart) {
+			return;
+		}
 		try{
 			server.bossGroup.shutdownGracefully();
 			server.workerGroup.shutdownGracefully();

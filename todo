@@ -7,8 +7,9 @@
 
 
 修改rpc服务器端序列化使用的方式，不固定一种，根据客户端自动查找对应的序列化方式
-性能测试
 http服务的https支持，安全校验
-多json支持，如：jackson
+多json、Serializable支持，如：jackson
 添加rpc客户端线程池
+
+对比jupiter、motan的性能
 

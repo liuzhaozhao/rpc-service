@@ -21,8 +21,9 @@ public class ServiceFactory {
 	private ISerialize serialize = new FstSerialize();
 	private String[] serverAddress;
 	private ResetReturn resetReturn;
-	private int readTimeoutMills = 20000;// 读取响应超时时间
+	private int readTimeoutMills = 10000;// 读取响应超时时间，不要设置太长，如果数据在服务器解析过程出现异常，则客户端只能等待这么长时间才能收到响应
 	private boolean enableLog = true;
+	private boolean start = false;
 	// 禁止外部创建实例
 	private ServiceFactory(){}
 	
@@ -30,13 +31,17 @@ public class ServiceFactory {
 		return factory;
 	}
 	
-	public void init(String[] serverAddress) {
+	public synchronized void init(String[] serverAddress) {
+		Utils.checkArgument(serverAddress != null && serverAddress.length > 0, "客户端连接不能为null");
+		Utils.checkStatus(!start, "服务已启动，不可以重复调用");
 		this.serverAddress = serverAddress;
 		connect.updateConnect(Arrays.asList(serverAddress));
+		start = true;
 	}
 	
 	public ServiceFactory setConnect(ConnectManage connect) {
 		Utils.checkArgument(connect != null, "客户端连接不能为null");
+		Utils.checkStatus(!start, "服务已启动，不可以设置连接池");
 		this.connect = connect;
 		return this;
 	}
@@ -48,6 +53,7 @@ public class ServiceFactory {
 	
 	public ServiceFactory setSerialize(ISerialize serialize) {
 		Utils.checkArgument(serialize != null, "序列化配置不能为null");
+		Utils.checkStatus(!start, "服务已启动，不可以设置序列化");
 		this.serialize = serialize;
 		return this;
 	}

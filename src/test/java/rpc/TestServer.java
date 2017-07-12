@@ -1,5 +1,8 @@
 package rpc;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.service.rpc.exception.RepeatedPathException;
 import com.service.rpc.serialize.FastJsonSerialize;
 import com.service.rpc.server.rpc.RpcServer;
@@ -15,6 +18,11 @@ public class TestServer {
 		// .setSerialize(new FastJsonSerialize())
 		RpcServer.get().setSerialize(new FastJsonSerialize()).start(8808, Service.class);
 		
+	}
+	
+	@org.junit.Test
+	public void startMotan() {
+		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:motan_server3.xml");
 	}
 	
 	@org.junit.Test

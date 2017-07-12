@@ -65,6 +65,18 @@ public class Utils {
 	}
 	
 	/**
+	 * 非法状态检测
+	 * @param expression
+	 * @param errorMessageTemplate
+	 * @param errorMessageArgs
+	 */
+	public static void checkStatus(boolean expression, String errorMessageTemplate, Object... errorMessageArgs) {
+		if (!expression) {
+			throw new IllegalStateException(String.format(errorMessageTemplate, errorMessageArgs));
+		}
+	}
+	
+	/**
 	 * 将普通文本中的正则表达式的特殊字符转义
 	 * @param keyword
 	 * @return

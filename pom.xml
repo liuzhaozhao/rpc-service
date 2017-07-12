@@ -6,6 +6,7 @@
   
   <properties>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<jupiter.version>1.2.3</jupiter.version>
   </properties>
   
   <build>
@@ -86,13 +87,12 @@
 	    <version>2.50</version>
 	</dependency>
 	
-	
-	<dependency>
-	    <groupId>com.jfinal</groupId>
-	    <artifactId>jfinal</artifactId>
-	    <version>3.1</version>
-	    <scope>test</scope>
-	</dependency>
+<!-- 	<dependency> -->
+<!-- 	    <groupId>com.jfinal</groupId> -->
+<!-- 	    <artifactId>jfinal</artifactId> -->
+<!-- 	    <version>3.1</version> -->
+<!-- 	    <scope>test</scope> -->
+<!-- 	</dependency> -->
 	<dependency>
 	    <groupId>junit</groupId>
 	    <artifactId>junit</artifactId>
@@ -111,6 +111,82 @@
 	    <version>1.0.3</version>
 	    <scope>test</scope>
 	</dependency>
+	
+	<!-- Motan RPC -->
+	 <dependency>
+	     <groupId>com.weibo</groupId>
+	     <artifactId>motan-transport-netty</artifactId>
+	     <version>0.3.0</version>
+	     <scope>test</scope>
+	 </dependency>
+	 <dependency>
+	    <groupId>com.weibo</groupId>
+	    <artifactId>motan-springsupport</artifactId>
+	    <version>0.3.0</version>
+	    <scope>test</scope>
+	</dependency>
+	<dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-context</artifactId>
+	    <version>4.3.7.RELEASE</version>
+	    <scope>test</scope>
+	</dependency>
+	<dependency>
+	    <groupId>com.weibo</groupId>
+	    <artifactId>motan-registry-zookeeper</artifactId>
+	    <version>0.2.1</version>
+	    <scope>test</scope>
+	</dependency>
+	<!-- Motan RPC -->
+	
+	<!-- jupiter-rpc -->
+<!-- 	<dependency> -->
+<!-- 	   <groupId>org.jupiter-rpc</groupId> -->
+<!-- 	   <artifactId>jupiter-rpc</artifactId> -->
+<!-- 	   <version>${jupiter.version}</version> -->
+<!-- 	</dependency> -->
+	<!-- 传输层 -->
+<!-- 	<dependency> -->
+<!-- 	   <groupId>org.jupiter-rpc</groupId> -->
+<!-- 	   <artifactId>jupiter-transport-netty</artifactId> -->
+<!-- 	   <version>${jupiter.version}</version> -->
+<!-- 	</dependency> -->
+	 <!-- 序列化/反序列化, 可选择只其中依赖一种或者同时依赖多种 -->
+<!-- 	<dependency> -->
+<!-- 	   <groupId>org.jupiter-rpc</groupId> -->
+<!-- 	   <artifactId>jupiter-serialization-hessian</artifactId> -->
+<!-- 	   <version>${jupiter.version}</version> -->
+<!-- 	</dependency> -->
+	<!-- 注册中心, jupiter-registry-zookeeper/jupiter-registry-default二选一 -->
+<!-- 	<dependency> -->
+<!-- 	   <groupId>org.jupiter-rpc</groupId> -->
+<!-- 	   <artifactId>jupiter-registry-default</artifactId> -->
+<!-- 	   <version>${jupiter.version}</version> -->
+<!-- 	</dependency> -->
+	<!-- telnet监控模块(可选) -->
+<!-- 	<dependency> -->
+<!-- 	   <groupId>org.jupiter-rpc</groupId> -->
+<!-- 	   <artifactId>jupiter-monitor</artifactId> -->
+<!-- 	   <version>${jupiter.version}</version> -->
+<!-- 	</dependency> -->
+	
+<!-- 	<dependency> -->
+<!-- 	    <groupId>com.codahale.metrics</groupId> -->
+<!-- 	    <artifactId>metrics-core</artifactId> -->
+<!-- 	    <version>3.0.2</version> -->
+<!-- 	</dependency> -->
+<!-- 	<dependency> -->
+<!-- 	    <groupId>io.dropwizard.metrics</groupId> -->
+<!-- 	    <artifactId>metrics-core</artifactId> -->
+<!-- 	    <version>3.1.2</version> -->
+<!-- 	</dependency> -->
+	<!-- 必须显式引用，否则该包不会自动引用slf4j包，导致在服务端配置jupiter.metric.needed=true时，客户端调用报错 -->
+<!-- 	<dependency> -->
+<!-- 	    <groupId>io.dropwizard.metrics</groupId> -->
+<!-- 	    <artifactId>metrics-core</artifactId> -->
+<!-- 	    <version>3.2.2</version> -->
+<!-- 	</dependency> -->
+    <!-- jupiter-rpc -->
     
   </dependencies>
 </project>
