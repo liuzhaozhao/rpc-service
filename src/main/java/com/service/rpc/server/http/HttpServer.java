@@ -35,6 +35,10 @@ public class HttpServer {
 	
 	private HttpServer() {}
 	
+	public static HttpServer get() {
+		return server;
+	}
+	
 	/**
 	 * 开启http服务
 	 * @throws RepeatedPathException 
@@ -42,12 +46,11 @@ public class HttpServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public static HttpServer start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		server.port = port;
-		server.classes = classes;
-		server.initMethod();
-		server.startServer();
-		return server;
+	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		this.port = port;
+		this.classes = classes;
+		initMethod();
+		startServer();
 	}
 	
 	public HttpServer setEnableLog(boolean enableLog) {

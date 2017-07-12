@@ -31,7 +31,7 @@ public class Server {
 	 * @throws InterruptedException 
 	 */
 	public static void startHttp(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		HttpServer.start(port, classes);
+		HttpServer.get().start(port, classes);
 	}
 	
 	/**

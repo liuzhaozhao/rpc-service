@@ -29,11 +29,10 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class RpcServer {
+	private static Logger log = Logger.getLogger(RpcServer.class);
 	private static RpcServer server = new RpcServer();
 	
-	private static Logger log = Logger.getLogger(RpcServer.class);
 	private Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
-	
 	private int port;
 	private Class<?>[] classes;
 	private ISerialize serialize = new FstSerialize();
@@ -43,6 +42,10 @@ public class RpcServer {
 	
 	private RpcServer() {}
 	
+	public static RpcServer get() {
+		return server;
+	}
+	
 	/**
 	 * 开启RPC服务
 	 * @throws RepeatedPathException 
@@ -50,12 +53,11 @@ public class RpcServer {
 	 * @throws InstantiationException 
 	 * @throws InterruptedException 
 	 */
-	public static RpcServer start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-		server.port = port;
-		server.classes = classes;
-		server.initMethod();
-		server.startServer();
-		return server;
+	public void start(int port, Class<?>... classes) throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+		this.port = port;
+		this.classes = classes;
+		initMethod();
+		startServer();
 	}
 	
 	public RpcServer setSerialize(ISerialize serialize) {

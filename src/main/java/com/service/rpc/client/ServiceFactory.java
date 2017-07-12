@@ -21,15 +21,18 @@ public class ServiceFactory {
 	private ISerialize serialize = new FstSerialize();
 	private String[] serverAddress;
 	private ResetReturn resetReturn;
-	private boolean isDone = false;
 	private int readTimeoutMills = 20000;// 读取响应超时时间
 	private boolean enableLog = true;
 	// 禁止外部创建实例
 	private ServiceFactory(){}
 	
-	public static ServiceFactory init(String[] serverAddress) {
-		factory.serverAddress = serverAddress;
+	public static ServiceFactory get() {
 		return factory;
+	}
+	
+	public void init(String[] serverAddress) {
+		this.serverAddress = serverAddress;
+		connect.updateConnect(Arrays.asList(serverAddress));
 	}
 	
 	public ServiceFactory setConnect(ConnectManage connect) {
@@ -60,17 +63,6 @@ public class ServiceFactory {
 		return this;
 	}
 	
-	/**
-	 * 初始化完成后，必须执行该方法
-	 */
-	private synchronized void done(){
-		if(isDone) {
-			return;
-		}
-		isDone = true;
-		connect.updateConnect(Arrays.asList(serverAddress));
-	}
-	
 	public static ISerialize getSerialize() {
 		return factory.serialize;
 	}
@@ -86,9 +78,6 @@ public class ServiceFactory {
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Class<T> cls) throws InstantiationException, IllegalAccessException {
 		Utils.checkArgument(factory.serverAddress != null && factory.serverAddress.length > 0, "未初始化服务地址，请执行init方法");
-		if(!factory.isDone) {
-			factory.done();
-		}
 		Utils.validateServiceInterface(cls);
 		Object instance = factory.proxyService.get(cls);
 		if (instance != null) {// 缓存中已存在改实例则直接返回

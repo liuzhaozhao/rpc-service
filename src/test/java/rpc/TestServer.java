@@ -11,9 +11,9 @@ import service.Service;
 public class TestServer {
 	@org.junit.Test
 	public void start() throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
-//		RpcServer.start(8809, TestService.class);
-		//
-		RpcServer.start(8808, Service.class).setSerialize(new FastJsonSerialize());
+//		RpcServer.get().start(8809, TestService.class);
+		// .setSerialize(new FastJsonSerialize())
+		RpcServer.get().setSerialize(new FastJsonSerialize()).start(8808, Service.class);
 		
 	}
 	

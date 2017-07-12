@@ -13,7 +13,7 @@ public class TestClient {
 	@org.junit.Test
 	public void start() throws InstantiationException, IllegalAccessException {
 		// .setSerialize(new FastJsonSerialize())
-		ServiceFactory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
+		ServiceFactory.get().init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
 		ITestService service = ServiceFactory.get(ITestService.class);
 		System.err.println(service.testM());
 		System.err.println(service.testM("arg1"));
@@ -28,7 +28,7 @@ public class TestClient {
 	
 	@org.junit.Test
 	public void testThread() throws InstantiationException, IllegalAccessException, InterruptedException {
-		ServiceFactory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
+		ServiceFactory.get().init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
 		ITestService service = ServiceFactory.get(ITestService.class);
 		System.err.println(service.testM());
 		long startTime = System.currentTimeMillis();

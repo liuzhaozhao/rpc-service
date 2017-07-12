@@ -15,7 +15,7 @@ public class TestClient2 {
 	
 	private IService getService() throws InstantiationException, IllegalAccessException {
 		// .setSerialize(new FastJsonSerialize())
-		ServiceFactory.init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"}).setSerialize(new FastJsonSerialize());
+		ServiceFactory.get().setSerialize(new FastJsonSerialize()).init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
 		return ServiceFactory.get(IService.class);
 		
 //		cn.jugame.http.client.ServiceFactory.ServiceFactory.factory.init(new ServiceSetting("http://localhost:9091", "code", "key").setConnectTimeout(100000).setReadTimeout(100000));
