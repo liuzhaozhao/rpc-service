@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.service.rpc.common.Utils;
+import com.service.rpc.server.http.HttpServer;
 import com.service.rpc.server.http.method.HttpMethod;
 import com.service.rpc.server.http.method.HttpMethodInfo;
 import com.service.rpc.server.http.method.HttpMethodParam;
@@ -61,42 +62,48 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     
 	@Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-		try{
-			if(!(msg instanceof HttpRequest)) {// 丢弃请求
-				return;
-			}
-			this.ctx = ctx;
-	        this.request = (HttpRequest) msg;
-	        this.headers = request.headers();
-	        this.url = Utils.getUrl(request.uri());
-	        this.httpType = HttpType.get(request.method().name());
-	        if(this.httpType == null) {
-	        	render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
-	    		return;
-	        }
-	        setContentType();
-	        if(this.httpType == HttpType.POST && this.contentType == null) {
-	        	render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
-	    		return;
-	        }
-	        methodInfo = HttpMethod.getMethodInfo(url, httpType.getType());
-        	if(methodInfo == null) {
-        		render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
-        		return;
-        	}
-        	initParams();
-        	Object returnData = methodInfo.invoke(getMethodData());
-        	render(HttpResponseStatus.OK, methodInfo.getReturnType().getReturnData(returnData));
-        } catch(Exception e){
-        	String errorMsg = "请求异常";
-        	if(e.getMessage() != null) {
-        		errorMsg = e.getMessage();
-        	}
-        	render(HttpResponseStatus.NOT_FOUND, errorMsg.getBytes());
-        	log.warn("执行http调用异常", e);
-        }finally {
-        	ReferenceCountUtil.release(msg);
-		}
+		HttpRequestHandler thisHandler = this;
+		HttpServer.submit(new Runnable() {// 添加业务线程池处理
+            @Override
+            public void run() {
+            	try{
+            		if(!(msg instanceof HttpRequest)) {// 丢弃请求
+            			return;
+            		}
+            		thisHandler.ctx = ctx;
+            		thisHandler.request = (HttpRequest) msg;
+            		thisHandler.headers = request.headers();
+            		thisHandler.url = Utils.getUrl(request.uri());
+            		thisHandler.httpType = HttpType.get(request.method().name());
+            		if(thisHandler.httpType == null) {
+            			render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
+            			return;
+            		}
+            		setContentType();
+            		if(thisHandler.httpType == HttpType.POST && thisHandler.contentType == null) {
+            			render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
+            			return;
+            		}
+            		methodInfo = HttpMethod.getMethodInfo(url, httpType.getType());
+            		if(methodInfo == null) {
+            			render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
+            			return;
+            		}
+            		initParams();
+            		Object returnData = methodInfo.invoke(getMethodData());
+            		render(HttpResponseStatus.OK, methodInfo.getReturnType().getReturnData(returnData));
+            	} catch(Exception e){
+            		String errorMsg = "请求异常";
+            		if(e.getMessage() != null) {
+            			errorMsg = e.getMessage();
+            		}
+            		render(HttpResponseStatus.NOT_FOUND, errorMsg.getBytes());
+            		log.warn("执行http调用异常", e);
+            	}finally {
+            		ReferenceCountUtil.release(msg);
+            	}
+            }
+        });
     }
 	
 	private void setContentType() {

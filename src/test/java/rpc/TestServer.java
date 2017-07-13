@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.service.rpc.exception.RepeatedPathException;
+import com.service.rpc.serialize.FastJsonSerialize;
 import com.service.rpc.server.rpc.RpcServer;
 
 import service.IService;

@@ -17,8 +17,8 @@ public class ServiceFactory {
 	
 //	private Logger log = Logger.getLogger(this.getClass());
 	private Map<Class<?>, Object> proxyService = new HashMap<Class<?>, Object>();// 接口代理实例缓存
-	private ConnectManage connect = NettyConnect.getInstance();
-	private ISerialize serialize = new FstSerialize();
+	private ConnectManage connect;
+	private ISerialize serialize;
 	private String[] serverAddress;
 	private ResetReturn resetReturn;
 	private int readTimeoutMills = 10000;// 读取响应超时时间，不要设置太长，如果数据在服务器解析过程出现异常，则客户端只能等待这么长时间才能收到响应
@@ -35,6 +35,12 @@ public class ServiceFactory {
 		Utils.checkArgument(serverAddress != null && serverAddress.length > 0, "客户端连接不能为null");
 		Utils.checkStatus(!start, "服务已启动，不可以重复调用");
 		this.serverAddress = serverAddress;
+		if(connect == null) {
+			connect = NettyConnect.getInstance();
+		}
+		if(serialize == null) {
+			serialize = new FstSerialize();
+		}
 		connect.updateConnect(Arrays.asList(serverAddress));
 		start = true;
 	}

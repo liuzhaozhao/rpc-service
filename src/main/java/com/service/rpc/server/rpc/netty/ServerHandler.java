@@ -18,39 +18,43 @@ public class ServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx,final RpcRequest request) {
-    	long startTime = System.currentTimeMillis();
-    	MethodInfo methodInfo = RpcServer.getMethodInfo(request.getMethodIdentify());
-    	RpcResponse response = null;
-    	if(methodInfo == null) {
-    		response = new RpcResponse(request, RpcResponse.CODE_NO_METHOD, "不存在该服务");
-    	} else {
-    		try {
-				response = new RpcResponse(request, RpcResponse.CODE_SUCCESS, methodInfo.invoke(request.getArgs()));
-			} catch (Exception e) {
-				String errorMsg = e.getCause() == null ?e.getMessage() : e.getCause().getMessage();
-				response = new RpcResponse(request, RpcResponse.CODE_SERVER_EXCEPTION, errorMsg);
-				log.warn("获取方法调用数据异常", e);
+    	RpcServer.submit(new Runnable() {// 防止业务处理太慢，占用线程，导致处理连接的线程变少， 并发连接数较多时或者业务处理较慢时，比较有用
+			@Override
+			public void run() {
+				long startTime = System.currentTimeMillis();
+		    	MethodInfo methodInfo = RpcServer.getMethodInfo(request.getMethodIdentify());
+		    	RpcResponse response = null;
+		    	if(methodInfo == null) {
+		    		response = new RpcResponse(request, RpcResponse.CODE_NO_METHOD, "不存在该服务");
+		    	} else {
+		    		try {
+						response = new RpcResponse(request, RpcResponse.CODE_SUCCESS, methodInfo.invoke(request.getArgs()));
+					} catch (Exception e) {
+						String errorMsg = e.getCause() == null ?e.getMessage() : e.getCause().getMessage();
+						response = new RpcResponse(request, RpcResponse.CODE_SERVER_EXCEPTION, errorMsg);
+						log.warn("获取方法调用数据异常", e);
+					}
+		    	}
+		    	if(RpcServer.isEnableLog()) {
+		    		log.info("接收请求："+methodInfo.getMethodStr()+"，耗时："+(System.currentTimeMillis() - startTime)+"毫秒，请求值："+JsonUtil.toJson(request)+"，返回值："+JsonUtil.toJson(response));
+		    	}
+		    	ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
+		            @Override
+		            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+		            	if(!channelFuture.isSuccess()) {// 如序列化异常
+		            		String errorMsg = "";
+		            		if(channelFuture.cause() != null) {
+		            			errorMsg = channelFuture.cause().getMessage();
+		            			log.warn(errorMsg, channelFuture.cause());
+		            		} else {
+		            			errorMsg = "响应数据异常";
+		            			log.warn(errorMsg);
+		            		}
+		            	}
+		            }
+		        });
 			}
-    	}
-    	if(RpcServer.isEnableLog()) {
-    		log.info("接收请求："+methodInfo.getMethodStr()+"，耗时："+(System.currentTimeMillis() - startTime)+"毫秒，请求值："+JsonUtil.toJson(request)+"，返回值："+JsonUtil.toJson(response));
-    	}
-    	ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture channelFuture) throws Exception {
-            	if(!channelFuture.isSuccess()) {// 如序列化异常
-            		String errorMsg = "";
-            		if(channelFuture.cause() != null) {
-            			errorMsg = channelFuture.cause().getMessage();
-            			log.warn(errorMsg, channelFuture.cause());
-            		} else {
-            			errorMsg = "响应数据异常";
-            			log.warn(errorMsg);
-            		}
-            	}
-            }
-        });
-    	
+		});
     }
 
     @Override

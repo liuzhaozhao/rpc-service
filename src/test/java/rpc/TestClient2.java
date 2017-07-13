@@ -1,11 +1,19 @@
 package rpc;
 
-import java.rmi.Naming;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jupiter.rpc.DefaultClient;
+import org.jupiter.rpc.JClient;
+import org.jupiter.rpc.consumer.ProxyFactory;
+import org.jupiter.rpc.load.balance.LoadBalancerType;
+import org.jupiter.serialization.SerializerType;
+import org.jupiter.transport.JOption;
+import org.jupiter.transport.UnresolvedAddress;
+import org.jupiter.transport.netty.JNettyTcpConnector;
+
 import com.service.rpc.common.JsonUtil;
+import com.service.rpc.serialize.FastJsonSerialize;
 
 import service.Bean;
 import service.DataBean;

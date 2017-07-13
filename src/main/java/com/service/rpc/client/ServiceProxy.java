@@ -7,9 +7,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.service.rpc.common.HashKit;
+import com.service.rpc.common.JsonUtil;
 import com.service.rpc.common.Utils;
-import com.service.rpc.common.json.FastJson;
-import com.service.rpc.common.json.IJson;
 import com.service.rpc.exception.ServerRuntimeException;
 import com.service.rpc.transport.RpcRequest;
 import com.service.rpc.transport.RpcResponse;
@@ -26,7 +25,6 @@ public class ServiceProxy implements MethodHandler {
 	private static Map<Method, String> identifys = new HashMap<Method, String>();// 缓存已计算过唯一标识的方法
 	private static Map<String, Method> identifyMethod = new HashMap<String, Method>();// 缓存方法唯一标识和方法
 	private static Map<String, String> methodStr = new HashMap<String, String>();// 缓存方法的描述
-	private static IJson json = new FastJson();
 	
 	private ConnectManage connect;
 	private ResetReturn resetReturn;
@@ -85,7 +83,7 @@ public class ServiceProxy implements MethodHandler {
 			}
 		}finally {
 			if(ServiceFactory.isEnableLog()) {
-				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据"+(warnError?"(异常数据无错误原因)":"")+"："+json.toStr(future.getResponse()));
+				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据"+(warnError?"(异常数据无错误原因)":"")+"："+JsonUtil.toJson(future.getResponse()));
 			}
 		}
 		if(resetReturn == null) {

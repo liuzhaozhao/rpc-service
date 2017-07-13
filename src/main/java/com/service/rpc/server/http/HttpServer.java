@@ -1,6 +1,9 @@
 package com.service.rpc.server.http;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -25,13 +28,14 @@ import io.netty.handler.logging.LoggingHandler;
 public class HttpServer {
 	private static Logger log = Logger.getLogger(HttpServer.class);
 	private static HttpServer server = new HttpServer();
+	private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16, 600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
 	
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 	private int port;
 	private Class<?>[] classes;
-	private boolean enableLog = true;
 	private IJson json;
+	private boolean enableLog = true;
 	private boolean serverStart = false;
 	
 	private HttpServer() {}
@@ -92,6 +96,10 @@ public class HttpServer {
 		}
 	}
 	
+	public static void submit(Runnable task){
+        threadPoolExecutor.submit(task);
+    }
+	
 	/**
 	 * 初始化Http方法调用
 	 * @throws IllegalAccessException 
@@ -137,4 +145,6 @@ public class HttpServer {
 			stop();
 		}
 	}
+	
+	
 }
