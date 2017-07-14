@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.service.rpc.common.JsonUtil;
 import com.service.rpc.common.Utils;
 import com.service.rpc.server.http.HttpServer;
 import com.service.rpc.server.http.method.HttpMethod;
@@ -22,7 +23,7 @@ import com.service.rpc.server.http.method.ParamType;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -32,9 +33,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.AsciiString;
-import io.netty.util.ReferenceCountUtil;
 
-public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
+public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest> {
 	private Logger log = Logger.getLogger(this.getClass());
 	
 	private static final AsciiString CONTENT_TYPE = new AsciiString("Content-Type");
@@ -44,7 +44,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final byte[] NOT_FOUND = new byte[]{'N','o','t',' ','F','o','u','n','d'};
 //    private static final HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
     
-    private ChannelHandlerContext ctx;
+//    private ChannelHandlerContext ctx;
     protected HttpHeaders headers;
     protected HttpRequest request;
 //    private HttpPostRequestDecoder decoder;
@@ -57,12 +57,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 //    protected FullHttpRequest fullRequest;
     protected String url;
     protected HttpType httpType;
-    private PostRequestContentType contentType;
     protected HttpMethodInfo methodInfo;
+    private PostRequestContentType contentType;
     
 	@Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-		HttpRequestHandler thisHandler = this;
+    public void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) {
 		HttpServer.submit(new Runnable() {// 添加业务线程池处理
             @Override
             public void run() {
@@ -70,41 +69,67 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             		if(!(msg instanceof HttpRequest)) {// 丢弃请求
             			return;
             		}
-            		thisHandler.ctx = ctx;
-            		thisHandler.request = (HttpRequest) msg;
-            		thisHandler.headers = request.headers();
-            		thisHandler.url = Utils.getUrl(request.uri());
-            		thisHandler.httpType = HttpType.get(request.method().name());
-            		if(thisHandler.httpType == null) {
-            			render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
+//            		thisHandler.ctx = ctx;
+            		request = (HttpRequest) msg;
+            		headers = request.headers();
+            		url = Utils.getUrl(request.uri());
+            		httpType = HttpType.get(request.method().name());
+            		if(httpType == null) {
+            			render(ctx, HttpResponseStatus.NOT_FOUND, NOT_FOUND);
             			return;
             		}
             		setContentType();
-            		if(thisHandler.httpType == HttpType.POST && thisHandler.contentType == null) {
-            			render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
+            		if(httpType == HttpType.POST && contentType == null) {
+            			render(ctx, HttpResponseStatus.NOT_FOUND, NOT_FOUND);
             			return;
             		}
             		methodInfo = HttpMethod.getMethodInfo(url, httpType.getType());
             		if(methodInfo == null) {
-            			render(HttpResponseStatus.NOT_FOUND, NOT_FOUND);
+            			render(ctx, HttpResponseStatus.NOT_FOUND, NOT_FOUND);
             			return;
             		}
             		initParams();
             		Object returnData = methodInfo.invoke(getMethodData());
-            		render(HttpResponseStatus.OK, methodInfo.getReturnType().getReturnData(returnData));
+            		render(ctx, HttpResponseStatus.OK, methodInfo.getReturnType().getReturnData(returnData));
             	} catch(Exception e){
             		String errorMsg = "请求异常";
-            		if(e.getMessage() != null) {
-            			errorMsg = e.getMessage();
+            		if(e.getCause() != null) {
+            			errorMsg = e.getCause().getMessage() == null?e.getCause().toString() : e.getCause().getMessage();
             		}
-            		render(HttpResponseStatus.NOT_FOUND, errorMsg.getBytes());
+            		render(ctx, HttpResponseStatus.NOT_FOUND, errorMsg.getBytes());
             		log.warn("执行http调用异常", e);
             	}finally {
-            		ReferenceCountUtil.release(msg);
+            		log();
+//            		ReferenceCountUtil.release(msg);
             	}
             }
         });
     }
+	
+	/**
+	 * 打印请求日志
+	 */
+	private void log() {
+		StringBuilder strB = new StringBuilder();
+		strB.append(httpType).append(" ").append(url);
+		if(!queryParams.isEmpty()) {
+			strB.append("，get请求参数："+JsonUtil.toJson(queryParams));
+		}
+		if(!postParams.isEmpty()) {
+			strB.append("，post请求参数："+JsonUtil.toJson(postParams));
+		}
+		if(!pathParams.isEmpty()) {
+			strB.append("，path请求参数："+JsonUtil.toJson(pathParams));
+		}
+		if(StringUtils.isNotEmpty(postBody)) {
+			strB.append("，postBody请求参数："+JsonUtil.toJson(postBody));
+		}
+		log.info(strB.toString());
+	}
+	
+//	private void execute() {
+//		
+//	}
 	
 	private void setContentType() {
 		String typeStr = headers.get("Content-Type");
@@ -248,17 +273,17 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	 * @param ctx
 	 * @param msg
 	 */
-	protected void render(HttpResponseStatus status, byte[] msg) {
+	protected void render(ChannelHandlerContext ctx, HttpResponseStatus status, byte[] msg) {
 		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, Unpooled.wrappedBuffer(msg));
         response.headers().set(CONTENT_TYPE, (methodInfo==null||status != HttpResponseStatus.OK)?"text/plain":methodInfo.getReturnType().getType());
         response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
         boolean keepAlive = HttpUtil.isKeepAlive(request);
         if (!keepAlive) {
-            ctx.write(response).addListener(ChannelFutureListener.CLOSE);
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         } else {
             response.headers().set(CONNECTION, KEEP_ALIVE);
-            ctx.write(response);
+            ctx.writeAndFlush(response);
         }
 	}
 	
@@ -276,7 +301,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        log.warn("server caught exception", cause);
         ctx.close();
     }
 	

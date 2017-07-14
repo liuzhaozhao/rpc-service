@@ -59,8 +59,8 @@ public class ServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {// 此处异常后，客户端的当次请求只能等待超时返回了
-//        log.warn("server caught exception", cause);
-    	log.warn("server caught exception："+cause.getMessage());
+        log.warn("server caught exception", cause);
+//    	log.warn("server caught exception："+cause.getMessage());
         ctx.close();
     }
 }

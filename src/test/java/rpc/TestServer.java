@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.service.rpc.exception.RepeatedPathException;
-import com.service.rpc.serialize.FastJsonSerialize;
+import com.service.rpc.server.http.HttpServer;
 import com.service.rpc.server.rpc.RpcServer;
 
 import service.IService;
@@ -22,6 +22,14 @@ public class TestServer {
 //		RpcServer.get().start(8809, TestService.class);
 		// .setSerialize(new FastJsonSerialize())
 		RpcServer.get().start(8809, Service.class);
+		
+	}
+	
+	@org.junit.Test
+	public void startHttp() throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
+//		RpcServer.get().start(8809, TestService.class);
+		// .setSerialize(new FastJsonSerialize())
+		HttpServer.get().start(8080, Service.class);
 		
 	}
 	

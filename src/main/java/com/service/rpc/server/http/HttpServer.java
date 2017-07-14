@@ -75,7 +75,6 @@ public class HttpServer {
 		return this;
 	}
 	
-	
 	public static boolean isEnableLog() {
 		return server.enableLog;
 	}
