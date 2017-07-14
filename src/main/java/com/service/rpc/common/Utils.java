@@ -180,7 +180,58 @@ public class Utils {
 		}
 	}
 	
+	/**
+	 * 是否为基本数据类型，如：Integer、Double.... 都为基本数据类型
+	 * @param cls
+	 * @param additionClass	附加检测类型，即如果类型为给定的类型，也算作基本数据类型（如String）
+	 * @return
+	 */
+	public static boolean isPrimitive(Class<?> cls, Class<?>... additionClass){
+		for(Class<?> thisCls : additionClass){
+			if(thisCls == cls){
+				return true;
+			}
+		}
+		boolean isPrimitive = cls.isPrimitive();
+		if(!isPrimitive){
+			try {
+				isPrimitive = ((Class<?>) cls.getField("TYPE").get(null)).isPrimitive();
+			} catch (Exception e) {
+			}
+		}
+		return isPrimitive;
+	}
+	
+	public static Object convertBaseType(Class<?> cls, String str) {
+        if (Integer.class.isAssignableFrom(cls) || int.class.isAssignableFrom(cls)) {
+            return Integer.parseInt(str);
+        } else if (Long.class.isAssignableFrom(cls) || long.class.isAssignableFrom(cls)) {
+            return Long.parseLong(str);
+        } else if (Short.class.isAssignableFrom(cls) || short.class.isAssignableFrom(cls)) {
+            return Short.parseShort(str);
+        } else if (Double.class.isAssignableFrom(cls) || double.class.isAssignableFrom(cls)) {
+            return Double.parseDouble(str);
+        } else if (Float.class.isAssignableFrom(cls) || float.class.isAssignableFrom(cls)) {
+            return Float.parseFloat(str);
+        } else if (Byte.class.isAssignableFrom(cls) || byte.class.isAssignableFrom(cls)) {
+        	return Byte.parseByte(str);
+        } else if (Boolean.class.isAssignableFrom(cls) || boolean.class.isAssignableFrom(cls)) {
+        	return Boolean.parseBoolean(str);
+        } else if (Character.class.isAssignableFrom(cls) || char.class.isAssignableFrom(cls)) {
+        	return str.charAt(0);
+        }
+        return str;
+	}
+	
 	public static void main(String[] args) {
-		System.err.println(getUrl("http://localhost:8080/test_1/123/?arg=“arg2”&arg3=arg3"));
+//		System.err.println(getUrl("http://localhost:8080/test_1/123/?arg=“arg2”&arg3=arg3"));
+//		System.err.println(isPrimitive(Integer.class));
+//		
+//		System.err.println(Integer.class.isPrimitive());
+//		
+//		System.err.println(int.class.isPrimitive());
+		
+		System.err.println(convertBaseType(boolean.class, "true") instanceof Boolean);
+		
 	}
 }

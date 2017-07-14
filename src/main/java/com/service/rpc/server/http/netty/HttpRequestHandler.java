@@ -95,8 +95,10 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest>
             		String errorMsg = "请求异常";
             		if(e.getCause() != null) {
             			errorMsg = e.getCause().getMessage() == null?e.getCause().toString() : e.getCause().getMessage();
+            		} else if (e.getMessage() != null) {
+            			errorMsg = e.getMessage();
             		}
-            		render(ctx, HttpResponseStatus.NOT_FOUND, errorMsg.getBytes());
+            		render(ctx, HttpResponseStatus.BAD_REQUEST, errorMsg.getBytes());
             		log.warn("执行http调用异常", e);
             	}finally {
             		log();

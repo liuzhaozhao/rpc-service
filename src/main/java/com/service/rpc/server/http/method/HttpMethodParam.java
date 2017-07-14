@@ -5,8 +5,7 @@ import java.lang.reflect.Type;
 
 import javax.ws.rs.DefaultValue;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.service.rpc.common.Utils;
 import com.service.rpc.server.common.MethodParam;
 import com.service.rpc.server.http.HttpServer;
 
@@ -39,12 +38,26 @@ public class HttpMethodParam extends MethodParam {
 	 * @return
 	 */
 	public Object getParamObj(String str) {
-		if(StringUtils.isBlank(str)) {
+		if(str == null) {
 			str = defaultValue;
 		}
-		if(StringUtils.isBlank(str)) {
+		if(str == null && cls.isPrimitive()) {// 参数类型为基本数据类型（非包装类）数据不能为null
+			throw new RuntimeException("参数错误(未给定参数)");
+		}
+		if(str == null) {
 			return null;
 		}
+//		如果是基本数据类型，则直接返回，不做反序列化
+		if(cls.isAssignableFrom(String.class)) {
+			return str;
+		}
+		if(Utils.isPrimitive(cls)) {
+			Object obj = Utils.convertBaseType(cls, str);
+			if(!(obj instanceof String)) {
+				return obj;
+			}
+		}
+		// 非基本数据类型，使用json做反序列化
 		return HttpServer.getJson().toBean(str, type);
 	}
 
