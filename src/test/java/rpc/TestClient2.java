@@ -82,23 +82,33 @@ public class TestClient2 {
 		service.test3();// 预热
 		long startTime = System.currentTimeMillis();
 		
-		int threadNum = 100;
+		int threadNum = 10;
 		List<Thread> ts = new ArrayList<>();
 		for(int i=0; i<threadNum; i++) {
 			ts.add(new Thread(() -> {
 				service.test3();
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}));
 			
 			ts.add(new Thread(() -> {
 				service.test4("arg12", 12, 1.234, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}));
 		}
 		for(Thread t : ts) {
-			t.start();
+			t.run();
 		}
-		for(Thread t : ts) {
-			t.join();
-		}
+//		for(Thread t : ts) {
+//			t.join();
+//		}
 		System.err.println("耗时："+(System.currentTimeMillis() - startTime));
 	}
 	

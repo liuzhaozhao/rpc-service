@@ -1,6 +1,7 @@
 package com.service.rpc.client;
 
 import java.lang.reflect.Method;
+import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,9 +66,27 @@ public class ServiceProxy implements MethodHandler {
 			methodStr.put(identify, methodToString);
 		}
 		RpcRequest request = new RpcRequest(identify, args);
-		RpcFuture future = connect.send(request);
-//		Object data = future.get(ServiceFactory.factory.getReadTimeoutMills(), TimeUnit.MILLISECONDS);
-		RpcResponse response = future.get();
+		
+		RpcResponse response = null;
+		int tryTimes = 0;
+		do{
+			RpcFuture future = connect.send(request);
+			response = future.get();
+			tryTimes++;
+			if(response != null 
+					&& (response.getError() == null 
+						|| !(response.getError() instanceof ClosedChannelException))) {// 针对连接关闭的异常才会去重试
+				break;
+			}
+			System.err.println("符合异常重试条件，重试请求");
+//			try{// 不用等待，因为如果有多个连接可用，重试会优先获取未使用过的连接
+//				Thread.sleep(1000);
+//			} catch(Exception e) {
+//			}
+		} while (tryTimes <= ServiceFactory.getRetryTimes());
+		
+//		RpcFuture future = connect.send(request);
+//		RpcResponse response = future.get();
 		Object data = null;
 		boolean warnError = false;
 		try{
@@ -78,12 +97,12 @@ public class ServiceProxy implements MethodHandler {
 			} else if (response != null && response.getErrorMsg() != null) {// 服务器端异常
 				throw new ServerRuntimeException(response.getErrorMsg());
 			} else {// 这里暂时没有情况执行
-				warnError = false;
+				warnError = true;
 				throw new RuntimeException("请求异常");
 			}
 		}finally {
 			if(ServiceFactory.isEnableLog()) {
-				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据"+(warnError?"(异常数据无错误原因)":"")+"："+JsonUtil.toJson(future.getResponse()));
+				log.info(methodStr.get(identify)+"耗时："+(System.currentTimeMillis() - startTime)+"毫秒，返回数据"+(warnError?"(异常数据无错误原因)":"")+"："+JsonUtil.toJson(response));
 			}
 		}
 		if(resetReturn == null) {

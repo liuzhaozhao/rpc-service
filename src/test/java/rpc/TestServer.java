@@ -1,7 +1,5 @@
 package rpc;
 
-import java.util.List;
-
 import org.jupiter.common.util.SystemPropertyUtil;
 import org.jupiter.monitor.MonitorServer;
 import org.jupiter.rpc.DefaultServer;
@@ -11,12 +9,10 @@ import org.jupiter.transport.netty.JNettyTcpAcceptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.service.rpc.common.JsonUtil;
 import com.service.rpc.exception.RepeatedPathException;
+import com.service.rpc.server.http.HttpServer;
 import com.service.rpc.server.rpc.RpcServer;
 
-import service.Bean;
-import service.DataBean;
 import service.IService;
 import service.Service;
 
@@ -33,11 +29,11 @@ public class TestServer {
 	public void startHttp() throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
 //		RpcServer.get().start(8809, TestService.class);
 		// .setSerialize(new FastJsonSerialize())
-//		HttpServer.get().start(8080, Service.class);
+		HttpServer.get().start(8080, Service.class);
 		
-		System.err.println(JsonUtil.toJson(new Bean()));
-		System.err.println(JsonUtil.toJson(BeanUtil.getListBean()));
-		System.err.println(JsonUtil.toJson(BeanUtil.getMapBean()));
+//		System.err.println(JsonUtil.toJson(new Bean()));
+//		System.err.println(JsonUtil.toJson(BeanUtil.getListBean()));
+//		System.err.println(JsonUtil.toJson(BeanUtil.getMapBean()));
 		
 	}
 	

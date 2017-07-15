@@ -2,6 +2,7 @@ package com.service.rpc.client.netty;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -35,8 +36,9 @@ public class NettyConnect implements ConnectManage {
     protected long connectTimeoutMillis = 6000;
     private AtomicInteger roundRobin = new AtomicInteger(0);
 	
-    private CopyOnWriteArrayList<ClientHandler> connectedHandlers = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<ClientHandler> connectedHandlers = new CopyOnWriteArrayList<ClientHandler>();
 //    private Map<InetSocketAddress, ClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
+    private ThreadLocal<List<ClientHandler>> threadUsedConnect = new ThreadLocal<List<ClientHandler>>();// 存储当前线程使用过的ClientHandler
     
     private NettyConnect() {}
     
@@ -126,7 +128,7 @@ public class NettyConnect implements ConnectManage {
 	public RpcFuture send(RpcRequest request) {
 		CopyOnWriteArrayList<ClientHandler> handlers = (CopyOnWriteArrayList<ClientHandler>) this.connectedHandlers.clone();
         int size = handlers.size();
-        while (size <= 0) {
+        while (size <= 0) {// TODO 此处需测试超时未获取连接时抛异常
             try {
                 boolean available = waitConnect();
                 if (available) {
@@ -138,8 +140,43 @@ public class NettyConnect implements ConnectManage {
                 throw new RuntimeException("Can't connect any servers!", e);
             }
         }
-        int index = (roundRobin.getAndAdd(1) + size) % size;
-		return handlers.get(index).send(request);
+        List<ClientHandler> usedConnect = threadUsedConnect.get();
+        if(usedConnect == null) {// 当前线程没使用过连接，则直接返回最近未使用过的连接
+        	ClientHandler handler = handlers.get(roundRobin.getAndAdd(1) % size);//  + size
+        	usedConnect = new ArrayList<ClientHandler>();
+        	usedConnect.add(handler);
+        	threadUsedConnect.set(usedConnect);
+        	System.err.println("当前线程无使用过的connnect，使用连接："+handler.getRemotePeer().toString());
+        	return handler.send(request);
+        }
+        ClientHandler useHandler = null;
+        
+        // 从当前所有线程使用的位置开始搜索当前线程未使用的连接（此处应该从当前线程第一个使用的位置处查找，但是即便是这样也可能出现在当前线程下一次获取连接时，总连接数有变动，
+    	// 位置依然对不上当前线程上一次连接的下一个），为什么不从handlers的第一个查找，因为这样会导致前面位置的连接使用的次数多于后面的
+        int startIndex = roundRobin.get();
+        for(int i=0; i<handlers.size(); i++) {// 同一个线程，使用不同连接，可以在异常重试时，避免重复使用一个有问题的连接
+        	ClientHandler handler = handlers.get(startIndex % handlers.size());
+        	if(!usedConnect.contains(handler)) {
+        		usedConnect.add(handler);
+        		useHandler = handler;
+        		break;
+        	}
+        	startIndex++;
+        }
+        if(useHandler == null) {// 没有找到未使用过的Handler，则使用当前线程最早使用过的Handler
+        	System.err.println("所有的connect当前线程都是用过");
+        	for(int i=0; i<usedConnect.size(); i++) {
+        		ClientHandler handler = usedConnect.get(i);
+        		if(handlers.contains(handler)) {
+        			useHandler = handler;
+        			usedConnect.remove(handler);
+        			usedConnect.add(handler);// 将刚使用的连接放最后
+        		}
+        	}
+        }
+        // 此处useHandler不会为null
+        System.err.println("使用连接："+useHandler.getRemotePeer().toString());
+        return useHandler.send(request);
 	}
 
 	@Override

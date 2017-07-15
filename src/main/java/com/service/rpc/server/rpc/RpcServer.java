@@ -15,6 +15,7 @@ import com.service.rpc.exception.RepeatedPathException;
 import com.service.rpc.serialize.FstSerialize;
 import com.service.rpc.serialize.ISerialize;
 import com.service.rpc.server.common.MethodInfo;
+import com.service.rpc.server.rpc.annotation.RpcService;
 import com.service.rpc.server.rpc.netty.ServerDecoder;
 import com.service.rpc.server.rpc.netty.ServerEncoder;
 import com.service.rpc.server.rpc.netty.ServerHandler;
@@ -118,7 +119,12 @@ public class RpcServer {
 		for(Class<?> cls : classes) {
 			Object instance = cls.newInstance();
 			Utils.checkArgument(cls.getInterfaces().length > 0, "类必须继承接口");
-			for(Class<?> api : cls.getInterfaces()) {
+			Class<?>[] interfaces = cls.getInterfaces();
+			RpcService interfacesAnno = cls.getAnnotation(RpcService.class);
+			if(interfacesAnno != null) {// 如果配置了注解接口，则使用，没有配置则读取所有继承的接口
+				interfaces = interfacesAnno.value();
+			}
+			for(Class<?> api : interfaces) {
 				for(Method method : api.getMethods()) {
 					if(Utils.isObjectMethod(method)) {// 排除Object的公有方法
 						continue;

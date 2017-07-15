@@ -24,6 +24,7 @@ public class ServiceFactory {
 	private int readTimeoutMills = 10000;// 读取响应超时时间，不要设置太长，如果数据在服务器解析过程出现异常，则客户端只能等待这么长时间才能收到响应
 	private boolean enableLog = true;
 	private boolean start = false;
+	private int retryTimes = 3;// 请求数据失败时，最多重试的次数（不算第一次请求）
 	// 禁止外部创建实例
 	private ServiceFactory(){}
 	
@@ -75,6 +76,11 @@ public class ServiceFactory {
 		return this;
 	}
 	
+	public ServiceFactory setRetryTimes(int retryTimes) {
+		this.retryTimes = retryTimes;
+		return this;
+	}
+	
 	public static ISerialize getSerialize() {
 		return factory.serialize;
 	}
@@ -85,6 +91,10 @@ public class ServiceFactory {
 	
 	public static boolean isEnableLog() {
 		return factory.enableLog;
+	}
+	
+	public static int getRetryTimes() {
+		return factory.retryTimes;
 	}
 	
 	@SuppressWarnings("unchecked")

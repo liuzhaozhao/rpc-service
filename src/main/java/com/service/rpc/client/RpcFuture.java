@@ -66,9 +66,9 @@ public class RpcFuture implements Future<Object> {
 		sync.release(1);
 	}
 	
-	public RpcResponse getResponse() {
-		return response;
-	}
+//	public RpcResponse getResponse() {
+//		return response;
+//	}
 	
 	static class Sync extends AbstractQueuedSynchronizer {
 
