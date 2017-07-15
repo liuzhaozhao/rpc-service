@@ -25,6 +25,8 @@ public class ServiceFactory {
 	private boolean enableLog = true;
 	private boolean start = false;
 	private int retryTimes = 3;// 请求数据失败时，最多重试的次数（不算第一次请求）
+	private long waitconnectTimeoutMills = 5000;// 当所有连接都不可用时，最大等待连接的时间
+	
 	// 禁止外部创建实例
 	private ServiceFactory(){}
 	
@@ -81,6 +83,12 @@ public class ServiceFactory {
 		return this;
 	}
 	
+	public ServiceFactory setWaitconnectTimeoutMills(long waitconnectTimeoutMills) {
+		this.waitconnectTimeoutMills = waitconnectTimeoutMills;
+		return this;
+	}
+	
+
 	public static ISerialize getSerialize() {
 		return factory.serialize;
 	}
@@ -95,6 +103,10 @@ public class ServiceFactory {
 	
 	public static int getRetryTimes() {
 		return factory.retryTimes;
+	}
+	
+	public static long getWaitconnectTimeoutMills() {
+		return factory.waitconnectTimeoutMills;
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -90,6 +90,8 @@ public class ServiceProxy implements MethodHandler {
 		Object data = null;
 		boolean warnError = false;
 		try{
+			// 此处为什么要使用response.getError()，而不是直接抛出异常，原因是因为获取数据和获取返回值不是同一个线程，无法通过直接抛出异常的方式，
+			// 但是也有些异常是在同一个线程，但是为了在此处做到统一的处理方式，都把一场放在了response的error中了
 			if(response != null && response.getError() != null) {// 客户端异常
 				throw new RuntimeException(response.getError());
 			} else if (response != null && response.getResponseCode() == RpcResponse.CODE_SUCCESS) {

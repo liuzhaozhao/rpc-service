@@ -110,7 +110,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     public RpcFuture send(RpcRequest request) {
     	request.setRequestId(getRequestId());
         final CountDownLatch latch = new CountDownLatch(1);
-        RpcFuture rpcFuture = new RpcFuture(ServiceFactory.getReadTimeoutMills(), request);
+        RpcFuture rpcFuture = new RpcFuture(request);
         rpcFuture.setStartRequest(new Date());
         pendingRequest.put(request.getRequestId(), rpcFuture);
         channel.writeAndFlush(request)

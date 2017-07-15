@@ -1,8 +1,8 @@
 package com.service.rpc.exception;
 
 public class RepeatedPathException extends Exception {
-	private static final long serialVersionUID = 8651215630787820090L;
-	
+	private static final long serialVersionUID = -2878591079318719807L;
+
 	public RepeatedPathException() {
 	}
 

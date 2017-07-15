@@ -1,8 +1,8 @@
 package com.service.rpc.exception;
 
 public class ResponseTimeoutException extends Exception {
-	private static final long serialVersionUID = 8651215630787820090L;
-	
+	private static final long serialVersionUID = 4832364927956221645L;
+
 	public ResponseTimeoutException() {
 	}
 

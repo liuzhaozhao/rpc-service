@@ -1,8 +1,8 @@
 package com.service.rpc.exception;
 
 public class ServerRuntimeException extends RuntimeException {
-	private static final long serialVersionUID = 8651215630787820090L;
-	
+	private static final long serialVersionUID = 6443967042600807126L;
+
 	public ServerRuntimeException() {
 	}
 

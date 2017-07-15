@@ -17,7 +17,10 @@ import org.apache.log4j.Logger;
 
 import com.service.rpc.client.ConnectManage;
 import com.service.rpc.client.RpcFuture;
+import com.service.rpc.client.ServiceFactory;
+import com.service.rpc.exception.ConnectTimeoutException;
 import com.service.rpc.transport.RpcRequest;
+import com.service.rpc.transport.RpcResponse;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -33,7 +36,7 @@ public class NettyConnect implements ConnectManage {
 	private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16, 600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
 	private ReentrantLock lock = new ReentrantLock();
     private Condition connected = lock.newCondition();
-    protected long connectTimeoutMillis = 6000;
+    protected long connectTimeoutMillis = 300;// 不能太大，会导致连接超时延迟返回
     private AtomicInteger roundRobin = new AtomicInteger(0);
 	
     private CopyOnWriteArrayList<ClientHandler> connectedHandlers = new CopyOnWriteArrayList<ClientHandler>();
@@ -128,17 +131,18 @@ public class NettyConnect implements ConnectManage {
 	public RpcFuture send(RpcRequest request) {
 		CopyOnWriteArrayList<ClientHandler> handlers = (CopyOnWriteArrayList<ClientHandler>) this.connectedHandlers.clone();
         int size = handlers.size();
-        while (size <= 0) {// TODO 此处需测试超时未获取连接时抛异常
-            try {
-                boolean available = waitConnect();
-                if (available) {
-                    handlers = (CopyOnWriteArrayList<ClientHandler>) this.connectedHandlers.clone();
-                    size = handlers.size();
-                }
-            } catch (InterruptedException e) {
-                log.error("Waiting for available node is interrupted! ", e);
-                throw new RuntimeException("Can't connect any servers!", e);
+        long startTime = System.currentTimeMillis();
+        while (size <= 0 && (System.currentTimeMillis() - startTime) < ServiceFactory.getWaitconnectTimeoutMills()) {
+            boolean available = waitConnect();
+            if (available) {
+                handlers = (CopyOnWriteArrayList<ClientHandler>) this.connectedHandlers.clone();
+                size = handlers.size();
             }
+        }
+        if(size <= 0) {// 证明等待连接超时了，直接生成返回值
+        	RpcFuture rpcFuture = new RpcFuture(request);
+        	rpcFuture.setResponse(new RpcResponse(request, RpcResponse.CODE_CLIENT_EXCEPTION, new ConnectTimeoutException("获取连接超时")));
+        	return rpcFuture;
         }
         List<ClientHandler> usedConnect = threadUsedConnect.get();
         if(usedConnect == null) {// 当前线程没使用过连接，则直接返回最近未使用过的连接
@@ -204,6 +208,8 @@ public class NettyConnect implements ConnectManage {
                         	ClientHandler handler = channelFuture.channel().pipeline().get(ClientHandler.class);
                             connectedHandlers.add(handler);
                             weakupWaitConnect();
+                        } else {
+                        	log.warn("连接失败："+remotePeer, channelFuture.cause());
                         }
                     }
                 });
@@ -220,10 +226,15 @@ public class NettyConnect implements ConnectManage {
         }
     }
 
-    private boolean waitConnect() throws InterruptedException {
+    private boolean waitConnect() {
         lock.lock();
         try {
-            return connected.await(this.connectTimeoutMillis, TimeUnit.MILLISECONDS);
+            try {
+				return connected.await(this.connectTimeoutMillis, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				log.warn("等待连接被打断", e);
+				return false;
+			}
         } finally {
             lock.unlock();
         }
