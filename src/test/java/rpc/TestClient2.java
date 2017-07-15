@@ -79,26 +79,34 @@ public class TestClient2 {
 	@org.junit.Test
 	public void testThread() throws Exception {
 		IService service = getService();
-		service.test3();// 预热
+//		service.test3();// 预热
 		long startTime = System.currentTimeMillis();
 		
-		int threadNum = 10;
+		int threadNum = 20;
 		List<Thread> ts = new ArrayList<>();
 		for(int i=0; i<threadNum; i++) {
 			ts.add(new Thread(() -> {
-				service.test3();
 				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
+					service.test3();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(6000);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}));
 			
 			ts.add(new Thread(() -> {
-				service.test4("arg12", 12, 1.234, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
 				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
+					service.test4("arg12", 12, 1.234, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					Thread.sleep(6000);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}));

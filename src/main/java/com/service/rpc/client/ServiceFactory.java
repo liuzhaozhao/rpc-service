@@ -1,10 +1,12 @@
 package com.service.rpc.client;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.service.rpc.client.netty.NettyConnect;
+import com.service.rpc.client.connect.DefaultRegistry;
+import com.service.rpc.client.connect.NettyPool;
+import com.service.rpc.client.connect.Pool;
+import com.service.rpc.client.connect.Registry;
 import com.service.rpc.common.Utils;
 import com.service.rpc.serialize.FstSerialize;
 import com.service.rpc.serialize.ISerialize;
@@ -17,7 +19,7 @@ public class ServiceFactory {
 	
 //	private Logger log = Logger.getLogger(this.getClass());
 	private Map<Class<?>, Object> proxyService = new HashMap<Class<?>, Object>();// 接口代理实例缓存
-	private ConnectManage connect;
+	private Pool connect;
 	private ISerialize serialize;
 	private String[] serverAddress;
 	private ResetReturn resetReturn;
@@ -26,6 +28,7 @@ public class ServiceFactory {
 	private boolean start = false;
 	private int retryTimes = 3;// 请求数据失败时，最多重试的次数（不算第一次请求）
 	private long waitconnectTimeoutMills = 5000;// 当所有连接都不可用时，最大等待连接的时间
+	private Registry registry;
 	
 	// 禁止外部创建实例
 	private ServiceFactory(){}
@@ -39,16 +42,20 @@ public class ServiceFactory {
 		Utils.checkStatus(!start, "服务已启动，不可以重复调用");
 		this.serverAddress = serverAddress;
 		if(connect == null) {
-			connect = NettyConnect.getInstance();
+			connect = NettyPool.getInstance();
 		}
 		if(serialize == null) {
 			serialize = new FstSerialize();
 		}
-		connect.updateConnect(Arrays.asList(serverAddress));
+//		connect.updateConnect(Arrays.asList(serverAddress));
+		if(registry == null) {
+			registry = new DefaultRegistry(connect);
+		}
+		registry.connect(serverAddress);
 		start = true;
 	}
 	
-	public ServiceFactory setConnect(ConnectManage connect) {
+	public ServiceFactory setConnect(Pool connect) {
 		Utils.checkArgument(connect != null, "客户端连接不能为null");
 		Utils.checkStatus(!start, "服务已启动，不可以设置连接池");
 		this.connect = connect;
@@ -85,6 +92,11 @@ public class ServiceFactory {
 	
 	public ServiceFactory setWaitconnectTimeoutMills(long waitconnectTimeoutMills) {
 		this.waitconnectTimeoutMills = waitconnectTimeoutMills;
+		return this;
+	}
+	
+	public ServiceFactory setRegistry(Registry registry) {
+		this.registry = registry;
 		return this;
 	}
 	

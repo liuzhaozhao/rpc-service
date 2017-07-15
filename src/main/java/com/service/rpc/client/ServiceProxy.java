@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.service.rpc.client.connect.Pool;
 import com.service.rpc.common.HashKit;
 import com.service.rpc.common.JsonUtil;
 import com.service.rpc.common.Utils;
@@ -27,10 +28,10 @@ public class ServiceProxy implements MethodHandler {
 	private static Map<String, Method> identifyMethod = new HashMap<String, Method>();// 缓存方法唯一标识和方法
 	private static Map<String, String> methodStr = new HashMap<String, String>();// 缓存方法的描述
 	
-	private ConnectManage connect;
+	private Pool connect;
 	private ResetReturn resetReturn;
 	
-	public ServiceProxy(ConnectManage connect, ResetReturn resetReturn) {
+	public ServiceProxy(Pool connect, ResetReturn resetReturn) {
 		this.connect = connect;
 		this.resetReturn = resetReturn;
 	}
@@ -78,7 +79,7 @@ public class ServiceProxy implements MethodHandler {
 						|| !(response.getError() instanceof ClosedChannelException))) {// 针对连接关闭的异常才会去重试
 				break;
 			}
-			System.err.println("符合异常重试条件，重试请求");
+//			System.err.println("符合异常重试条件，重试请求");
 //			try{// 不用等待，因为如果有多个连接可用，重试会优先获取未使用过的连接
 //				Thread.sleep(1000);
 //			} catch(Exception e) {

@@ -1,13 +1,12 @@
-package com.service.rpc.client.netty;
+package com.service.rpc.client.connect;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -15,9 +14,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
-import com.service.rpc.client.ConnectManage;
 import com.service.rpc.client.RpcFuture;
 import com.service.rpc.client.ServiceFactory;
+import com.service.rpc.client.netty.ClientHandler;
+import com.service.rpc.client.netty.ClientInitializer;
 import com.service.rpc.exception.ConnectTimeoutException;
 import com.service.rpc.transport.RpcRequest;
 import com.service.rpc.transport.RpcResponse;
@@ -29,11 +29,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-public class NettyConnect implements ConnectManage {
+public class NettyPool implements Pool {
 	private Logger log = Logger.getLogger(this.getClass());
-	private volatile static NettyConnect connect;
+	private volatile static NettyPool connect;
 	private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
-	private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16, 600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
+//	private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16, 600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
 	private ReentrantLock lock = new ReentrantLock();
     private Condition connected = lock.newCondition();
     protected long connectTimeoutMillis = 300;// 不能太大，会导致连接超时延迟返回
@@ -43,19 +43,19 @@ public class NettyConnect implements ConnectManage {
 //    private Map<InetSocketAddress, ClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
     private ThreadLocal<List<ClientHandler>> threadUsedConnect = new ThreadLocal<List<ClientHandler>>();// 存储当前线程使用过的ClientHandler
     
-    private NettyConnect() {}
+    private NettyPool() {}
     
 	/**
 	 * 获取连接实例
 	 * @return
 	 */
-	public static NettyConnect getInstance() {
+	public static NettyPool getInstance() {
         if (connect != null) {
             return connect;
         }
-        synchronized (NettyConnect.class) {
+        synchronized (NettyPool.class) {
             if (connect == null) {
-            	connect = new NettyConnect();
+            	connect = new NettyPool();
             }
         }
         return connect;
@@ -87,7 +87,7 @@ public class NettyConnect implements ConnectManage {
             }
 		}
 		// 添加新连接
-		for (final InetSocketAddress socketAddress : newAllServerNodeSet) {
+		for (InetSocketAddress socketAddress : newAllServerNodeSet) {
 			connect(socketAddress);
         }
 	}
@@ -122,11 +122,12 @@ public class NettyConnect implements ConnectManage {
 	public void remove(InetSocketAddress remotePeer) {
 		for (int i = 0; i < connectedHandlers.size(); ++i) {
 			ClientHandler clientHandler = connectedHandlers.get(i);
-			if(remotePeer != null && !clientHandler.getRemotePeer().equals(remotePeer)) {
+			if(remotePeer != null && !remotePeer.equals(clientHandler.getRemotePeer())) {
 				continue;
 			}
             clientHandler.close();
             connectedHandlers.remove(clientHandler);
+            log.info("移除连接："+clientHandler.getRemotePeer());
 		}
 	}
 
@@ -154,7 +155,7 @@ public class NettyConnect implements ConnectManage {
         	usedConnect = new ArrayList<ClientHandler>();
         	usedConnect.add(handler);
         	threadUsedConnect.set(usedConnect);
-        	System.err.println("当前线程无使用过的connnect，使用连接："+handler.getRemotePeer().toString());
+//        	System.err.println("当前线程无使用过的connnect，使用连接："+handler.getRemotePeer().toString());
         	return handler.send(request);
         }
         ClientHandler useHandler = null;
@@ -172,7 +173,7 @@ public class NettyConnect implements ConnectManage {
         	startIndex++;
         }
         if(useHandler == null) {// 没有找到未使用过的Handler，则使用当前线程最早使用过的Handler
-        	System.err.println("所有的connect当前线程都是用过");
+//        	System.err.println("所有的connect当前线程都是用过");
         	for(int i=0; i<usedConnect.size(); i++) {
         		ClientHandler handler = usedConnect.get(i);
         		if(handlers.contains(handler)) {
@@ -183,7 +184,7 @@ public class NettyConnect implements ConnectManage {
         	}
         }
         // 此处useHandler不会为null
-        System.err.println("使用连接："+useHandler.getRemotePeer().toString());
+//        System.err.println("使用连接："+useHandler.getRemotePeer().toString());
         return useHandler.send(request);
 	}
 
@@ -191,36 +192,44 @@ public class NettyConnect implements ConnectManage {
 	public void stop() {
 		remove(null);
 		weakupWaitConnect();
-		threadPoolExecutor.shutdown();
+//		threadPoolExecutor.shutdown();
         eventLoopGroup.shutdownGracefully();
 	}
 
 	private void connectServerNode(final InetSocketAddress remotePeer) {
-        threadPoolExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                Bootstrap b = new Bootstrap();
-                b.group(eventLoopGroup)
-                        .channel(NioSocketChannel.class)
-                        .handler(new ClientInitializer());
-
-                ChannelFuture channelFuture = b.connect(remotePeer);
-                channelFuture.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(final ChannelFuture channelFuture) throws Exception {
-                        if (channelFuture.isSuccess()) {
-                        	ClientHandler handler = channelFuture.channel().pipeline().get(ClientHandler.class);
-                            connectedHandlers.add(handler);
-                            weakupWaitConnect();
-                        } else {
-                        	log.warn("连接失败："+remotePeer, channelFuture.cause());
-                        }
-                    }
-                });
-            }
+//        threadPoolExecutor.submit(new Runnable() {// 不使用异步添加连接，避免添加连接还未完成，下一个添加又来了，而无法对已有连接去重
+//            @Override
+//            public void run() {
+//            }
+//        });
+        Bootstrap b = new Bootstrap();
+        b.group(eventLoopGroup).channel(NioSocketChannel.class).handler(new ClientInitializer());
+        ChannelFuture channelFuture = b.connect(remotePeer);
+        final CountDownLatch latch = new CountDownLatch(1);
+        channelFuture.addListener(new ChannelFutureListener() {
+        	@Override
+        	public void operationComplete(final ChannelFuture channelFuture) throws Exception {
+        		if (channelFuture.isSuccess()) {
+        			ClientHandler handler = channelFuture.channel().pipeline().get(ClientHandler.class);
+        			connectedHandlers.add(handler);
+        			log.info("添加连接："+handler.getRemotePeer());
+        			weakupWaitConnect();
+        		} else {
+        			log.warn("连接失败："+remotePeer, channelFuture.cause());
+        		}
+        		latch.countDown();
+        	}
         });
+        try {// 等待获取连接结果后向下执行
+            latch.await();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
     }
 	
+	/**
+	 * 唤醒所有等待连接的线程
+	 */
 	private void weakupWaitConnect() {
         lock.lock();
         try {

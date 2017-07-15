@@ -1,11 +1,14 @@
 package test;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -90,6 +93,16 @@ public class Test {
 		System.err.println(roundRobin.get());
 	}
 	
+	@org.junit.Test
+	public void testServerReachable() throws UnknownHostException, IOException {
+//		Socket s = new Socket("127.0.0.1",8809);  
+//        s.close();
+		
+		InetSocketAddress address = new InetSocketAddress("127.0.0.1",8809);
+		System.err.println(address.getHostName());
+		System.err.println(address.getPort());
+		
+	}
 	
 	public static void main(String[] args) {
 		List<String> list = new ArrayList<>();

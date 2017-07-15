@@ -1,11 +1,12 @@
-package com.service.rpc.client;
+package com.service.rpc.client.connect;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import com.service.rpc.client.RpcFuture;
 import com.service.rpc.transport.RpcRequest;
 
-public interface ConnectManage {
+public interface Pool {
 	
 	/**
 	 * 更新连接池中的连接（外部触发，如zookeeper）
