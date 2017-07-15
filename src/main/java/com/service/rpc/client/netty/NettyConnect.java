@@ -88,25 +88,29 @@ public class NettyConnect implements ConnectManage {
 		}
 		// 添加新连接
 		for (final InetSocketAddress socketAddress : newAllServerNodeSet) {
-			boolean exist = false;
-			for(int i=0; i<connectedHandlers.size(); i++) {
-				if(socketAddress.equals(connectedHandlers.get(i).getRemotePeer())) {
-					exist = true;
-					break;
-				}
-			}
-			if(!exist) {
-				connectServerNode(socketAddress);
-			}
+			connect(socketAddress);
         }
 	}
 	
+	/**
+	 * 不存在，则创建连接，存在则忽略
+	 */
 	@Override
 	public void connect(InetSocketAddress remotePeer) {
-		remove(remotePeer);// 已存在，则删除
+		boolean exist = false;
+		for(int i=0; i<connectedHandlers.size(); i++) {
+			if(remotePeer.equals(connectedHandlers.get(i).getRemotePeer())) {
+				exist = true;
+				break;
+			}
+		}
+		if(!exist) {
+			connectServerNode(remotePeer);
+		}
+//		remove(remotePeer);// 已存在，则删除
 //		int processors = Runtime.getRuntime().availableProcessors();// 一个地址初始化CPU个数个连接
 //		for(int i=0; i<processors; i++) {
-			connectServerNode(remotePeer);
+//			connectServerNode(remotePeer);
 //		}
 	}
 
