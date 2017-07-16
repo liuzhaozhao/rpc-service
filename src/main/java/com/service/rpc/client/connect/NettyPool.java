@@ -1,7 +1,6 @@
 package com.service.rpc.client.connect;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 import org.apache.log4j.Logger;
 
@@ -78,14 +78,17 @@ public class NettyPool implements Pool {
             newAllServerNodeSet.add(new InetSocketAddress(host, port));
 		}
 		// 删除不存在的连接
-		for(int i = connectedHandlers.size() -1; i >= 0; i--) {
-			ClientHandler clientHandler = connectedHandlers.get(i);
-			SocketAddress remotePeer = clientHandler.getRemotePeer();
-            if (!newAllServerNodeSet.contains(remotePeer)) {
-            	clientHandler.close();
-                connectedHandlers.remove(clientHandler);
-            }
-		}
+		connectedHandlers.removeIf(new Predicate<ClientHandler>() {
+			@Override
+			public boolean test(ClientHandler handler) {
+				if(!newAllServerNodeSet.contains(handler.getRemotePeer())) {
+					handler.close();
+					return true;
+				}
+				return false;
+			}
+			
+		});
 		// 添加新连接
 		for (InetSocketAddress socketAddress : newAllServerNodeSet) {
 			connect(socketAddress);
@@ -94,12 +97,13 @@ public class NettyPool implements Pool {
 	
 	/**
 	 * 不存在，则创建连接，存在则忽略
+	 * 此处加了同步关键字，防止并发调用时，未检测到已存在
 	 */
 	@Override
-	public void connect(InetSocketAddress remotePeer) {
+	public synchronized void connect(InetSocketAddress remotePeer) {
 		boolean exist = false;
-		for(int i=0; i<connectedHandlers.size(); i++) {
-			if(remotePeer.equals(connectedHandlers.get(i).getRemotePeer())) {
+		for(ClientHandler handler : connectedHandlers) {// 这种遍历方式不会出现并发问题
+			if(remotePeer.equals(handler.getRemotePeer())) {
 				exist = true;
 				break;
 			}
@@ -120,20 +124,24 @@ public class NettyPool implements Pool {
 	 */
 	@Override
 	public void remove(InetSocketAddress remotePeer) {
-		for (int i = 0; i < connectedHandlers.size(); ++i) {
-			ClientHandler clientHandler = connectedHandlers.get(i);
-			if(remotePeer != null && !remotePeer.equals(clientHandler.getRemotePeer())) {
-				continue;
+		// 不要使用for循环(for int)，会出现并发问题
+		connectedHandlers.removeIf(new Predicate<ClientHandler>() {
+			@Override
+			public boolean test(ClientHandler handler) {
+				if(remotePeer != null && !remotePeer.equals(handler.getRemotePeer())) {
+					return false;
+				}
+				handler.close();
+				log.info("移除连接："+handler.getRemotePeer());
+				return true;
 			}
-            clientHandler.close();
-            connectedHandlers.remove(clientHandler);
-            log.info("移除连接："+clientHandler.getRemotePeer());
-		}
+		});
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public RpcFuture send(RpcRequest request) {
+		// 此处使用clone的原因是保证下面使用handlers过程中，handlers不会改变（不会有并发问题）
 		CopyOnWriteArrayList<ClientHandler> handlers = (CopyOnWriteArrayList<ClientHandler>) this.connectedHandlers.clone();
         int size = handlers.size();
         long startTime = System.currentTimeMillis();
@@ -144,7 +152,7 @@ public class NettyPool implements Pool {
                 size = handlers.size();
             }
         }
-        if(size <= 0) {// 证明等待连接超时了，直接生成返回值
+        if(size <= 0) {// 证明等待连接超时了，直接生成返回值，此处不抛异常是因为可以在ServiceProxy类里统一处理返回值
         	RpcFuture rpcFuture = new RpcFuture(request);
         	rpcFuture.setResponse(new RpcResponse(request, RpcResponse.CODE_CLIENT_EXCEPTION, new ConnectTimeoutException("获取连接超时")));
         	return rpcFuture;
@@ -164,7 +172,7 @@ public class NettyPool implements Pool {
     	// 位置依然对不上当前线程上一次连接的下一个），为什么不从handlers的第一个查找，因为这样会导致前面位置的连接使用的次数多于后面的
         int startIndex = roundRobin.get();
         for(int i=0; i<handlers.size(); i++) {// 同一个线程，使用不同连接，可以在异常重试时，避免重复使用一个有问题的连接
-        	ClientHandler handler = handlers.get(startIndex % handlers.size());
+        	ClientHandler handler = handlers.get(startIndex % size);
         	if(!usedConnect.contains(handler)) {
         		usedConnect.add(handler);
         		useHandler = handler;
