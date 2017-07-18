@@ -44,19 +44,13 @@
       <version>1.11.3</version>
       <scope>test</scope>
     </dependency>
-    <!-- 缓存包依赖包 -->
-	<dependency>
-	    <groupId>org.ow2.asm</groupId>
-	    <artifactId>asm</artifactId>
-	    <version>6.0_ALPHA</version>
-	</dependency>
-	<!-- netty包 -->
+	<!-- netty包，数据传输 -->
 	<dependency>
 	    <groupId>io.netty</groupId>
 	    <artifactId>netty-all</artifactId>
 	    <version>4.1.12.Final</version>
 	</dependency>
-	<!-- jaxrs接口规范 -->
+	<!-- jaxrs接口规范，用于http服务注解 -->
 	<dependency>
 	    <groupId>javax.ws.rs</groupId>
 	    <artifactId>javax.ws.rs-api</artifactId>
@@ -68,7 +62,7 @@
 	    <artifactId>javassist</artifactId>
 	    <version>3.22.0-CR2</version>
 	</dependency>
-	<!-- apache工具包 -->
+	<!-- apache工具包，主要用StringUtils -->
 	<dependency>
 	    <groupId>org.apache.commons</groupId>
 	    <artifactId>commons-lang3</artifactId>
@@ -80,12 +74,21 @@
 	    <artifactId>fastjson</artifactId>
 	    <version>1.2.33</version>
 	</dependency>
-	<!-- java快速序列化框架（用于TCP传输对象），如果不使用可排除该jar -->
+	<!-- 快速序列化框架（用于TCP传输对象），如果不使用可排除该jar -->
 	<dependency>
 	    <groupId>de.ruedigermoeller</groupId>
 	    <artifactId>fst</artifactId>
 	    <version>2.50</version>
 	</dependency>
+	<!-- zookeeper client 简化zookeeper的使用，用于监控服务，如果不使用zookeeper可以排除该jar  -->
+	<dependency>
+	    <groupId>com.101tec</groupId>
+	    <artifactId>zkclient</artifactId>
+	    <version>0.10</version>
+	</dependency>
+	
+	
+	
 	
 	<dependency>
 	    <groupId>com.jfinal</groupId>

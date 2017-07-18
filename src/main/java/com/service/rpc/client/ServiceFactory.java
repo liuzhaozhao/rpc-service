@@ -133,7 +133,7 @@ public class ServiceFactory {
 		proxyFactory.setInterfaces(new Class[] { cls });// 指定接口
 		Class<?> proxyClass = proxyFactory.createClass();
 		T service = (T) proxyClass.newInstance();// 设置Handler处理器
-		((ProxyObject) service).setHandler(new ServiceProxy(factory.connect, factory.resetReturn));// 所有服务代理使用一个代理实例，TODO 需测试并发
+		((ProxyObject) service).setHandler(new ServiceProxy(factory.connect, factory.resetReturn));// 所有服务代理使用一个代理实例
 		factory.proxyService.put(cls, service);
 		return service;
 	}

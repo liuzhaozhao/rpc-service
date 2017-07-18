@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.service.rpc.common.Utils;
-import com.service.rpc.server.rpc.netty.ServerHandler;
 
 /**
  * 该连接方式为服务直连方式，如服务地址为：127.0.0.1:10001、127.0.0.1:10002，则该注册方式会定期检测服务的可用性，定时删除和添加服务
@@ -19,6 +18,7 @@ import com.service.rpc.server.rpc.netty.ServerHandler;
 public class DefaultRegistry implements Registry {
 	private static final Logger log = Logger.getLogger(DefaultRegistry.class);
 	private static final long CHECK_CONNECT_TIME_INTERVAL = 3000;
+	private boolean checkConnect = true;// 是否定时检测连接是否可用，如果使用了nginx做代理，则不需要检测连接是否可用
 	private Pool pool;
 	private List<InetSocketAddress> serverAddress = new ArrayList<InetSocketAddress>();
 	
@@ -44,7 +44,10 @@ public class DefaultRegistry implements Registry {
 			public void run() {
 				while(true) {
 					checkConnect();
-					try {// 每秒检测一次
+					if(!checkConnect) {
+						return;
+					}
+					try {// 检测间隔时间
 						Thread.sleep(CHECK_CONNECT_TIME_INTERVAL);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
