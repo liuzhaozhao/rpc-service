@@ -1,6 +1,6 @@
-package com.service.rpc.client.connect;
+package com.service.rpc.client.connect.manage;
 
-public interface Registry {
+public interface ConnectManage {
 	/**
 	 * 需要连接的服务
 	 * @param servers	服务注册地址，格式如：ip:port

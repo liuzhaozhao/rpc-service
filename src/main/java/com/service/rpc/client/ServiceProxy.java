@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.service.rpc.client.connect.Pool;
+import com.service.rpc.client.connect.pool.Pool;
 import com.service.rpc.common.HashKit;
 import com.service.rpc.common.JsonUtil;
 import com.service.rpc.common.Utils;

@@ -1,4 +1,4 @@
-package com.service.rpc.client.connect;
+package com.service.rpc.client.connect.manage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.service.rpc.client.connect.pool.Pool;
 import com.service.rpc.common.Utils;
 
 /**
@@ -15,14 +16,14 @@ import com.service.rpc.common.Utils;
  * @author liuzhao
  *
  */
-public class DefaultRegistry implements Registry {
-	private static final Logger log = Logger.getLogger(DefaultRegistry.class);
+public class DefaultConnectManage implements ConnectManage {
+	private static final Logger log = Logger.getLogger(DefaultConnectManage.class);
 	private static final long CHECK_CONNECT_TIME_INTERVAL = 3000;
 	private boolean checkConnect = true;// 是否定时检测连接是否可用，如果使用了nginx做代理，则不需要检测连接是否可用
 	private Pool pool;
 	private List<InetSocketAddress> serverAddress = new ArrayList<InetSocketAddress>();
 	
-	public DefaultRegistry(Pool pool) {
+	public DefaultConnectManage(Pool pool) {
 		Utils.checkArgument(pool != null, "参数不能为null");
 		this.pool = pool;
 	}

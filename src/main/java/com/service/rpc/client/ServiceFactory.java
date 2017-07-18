@@ -3,10 +3,10 @@ package com.service.rpc.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.service.rpc.client.connect.DefaultRegistry;
-import com.service.rpc.client.connect.NettyPool;
-import com.service.rpc.client.connect.Pool;
-import com.service.rpc.client.connect.Registry;
+import com.service.rpc.client.connect.manage.ConnectManage;
+import com.service.rpc.client.connect.manage.DefaultConnectManage;
+import com.service.rpc.client.connect.pool.NettyPool;
+import com.service.rpc.client.connect.pool.Pool;
 import com.service.rpc.common.Utils;
 import com.service.rpc.serialize.FstSerialize;
 import com.service.rpc.serialize.ISerialize;
@@ -28,7 +28,7 @@ public class ServiceFactory {
 	private boolean start = false;
 	private int retryTimes = 3;// 请求数据失败时，最多重试的次数（不算第一次请求）
 	private long waitconnectTimeoutMills = 5000;// 当所有连接都不可用时，最大等待连接的时间
-	private Registry registry;
+	private ConnectManage registry;
 	
 	// 禁止外部创建实例
 	private ServiceFactory(){}
@@ -49,7 +49,7 @@ public class ServiceFactory {
 		}
 //		connect.updateConnect(Arrays.asList(serverAddress));
 		if(registry == null) {
-			registry = new DefaultRegistry(connect);
+			registry = new DefaultConnectManage(connect);
 		}
 		registry.connect(serverAddress);
 		start = true;
@@ -95,7 +95,7 @@ public class ServiceFactory {
 		return this;
 	}
 	
-	public ServiceFactory setRegistry(Registry registry) {
+	public ServiceFactory setRegistry(ConnectManage registry) {
 		this.registry = registry;
 		return this;
 	}
