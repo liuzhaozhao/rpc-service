@@ -1,14 +1,15 @@
 package test;
 
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,6 +22,24 @@ import com.jfinal.kit.HttpKit;
 import service.DataBean;
 
 public class Test {
+	
+	@org.junit.Test
+	public void testClientInfo() {
+		try{  
+			File directory = new File("");
+			System.out.println(directory.getAbsolutePath());
+            InetAddress addr = InetAddress.getLocalHost();   
+            String ip=addr.getHostAddress().toString(); //获取本机ip  
+            String hostName=addr.getHostName().toString(); //获取本机计算机名称  
+            System.out.println("本机IP："+ip+"\n本机名称:"+hostName);  
+            Properties props=System.getProperties();  
+            System.out.println("操作系统的名称："+props.getProperty("os.name"));  
+            System.out.println("操作系统的版本："+props.getProperty("os.version"));   
+        }catch(Exception e){  
+            e.printStackTrace();  
+        }
+	}
+	
 	@org.junit.Test
 	public void testConcurrentHashMap() {
 		ConcurrentHashMap<String, String> pendingRequest = new ConcurrentHashMap<String, String>();

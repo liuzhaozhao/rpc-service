@@ -3,17 +3,8 @@ package rpc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jupiter.rpc.DefaultClient;
-import org.jupiter.rpc.JClient;
-import org.jupiter.rpc.consumer.ProxyFactory;
-import org.jupiter.rpc.load.balance.LoadBalancerType;
-import org.jupiter.serialization.SerializerType;
-import org.jupiter.transport.JOption;
-import org.jupiter.transport.UnresolvedAddress;
-import org.jupiter.transport.netty.JNettyTcpConnector;
-
+import com.service.rpc.client.connect.manage.ZookeeperConnectManage;
 import com.service.rpc.common.JsonUtil;
-import com.service.rpc.serialize.FastJsonSerialize;
 
 import service.Bean;
 import service.DataBean;
@@ -23,8 +14,14 @@ public class TestClient2 {
 	
 	private IService getService() throws Exception {
 		// .setSerialize(new FastJsonSerialize())
-		com.service.rpc.client.ServiceFactory.get().init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
-		return com.service.rpc.client.ServiceFactory.get(IService.class);
+//		com.service.rpc.client.ServiceFactory.get().setConnectManage(new ZookeeperConnectManage()).init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
+		try{
+			com.service.rpc.client.ServiceFactory.get().setConnectManage(new ZookeeperConnectManage()).init(new String[]{"127.0.0.1:2181"});
+			return com.service.rpc.client.ServiceFactory.get(IService.class);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 		
 		
 //		cn.jugame.http.client.ServiceFactory.ServiceFactory.factory.init(new ServiceSetting("http://localhost:9091", "code", "key").setConnectTimeout(100000).setReadTimeout(100000));
@@ -60,6 +57,7 @@ public class TestClient2 {
 	@org.junit.Test
 	public void start() throws Exception {
 		IService service = getService();
+//		Thread.sleep(100000);
 //		service.test1();
 //		service.test2("arg1", 1, 1.23, new Bean(), BeanUtil.getListBean(), BeanUtil.getMapBean());
 		System.err.println(service.test3());

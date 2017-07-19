@@ -21,7 +21,7 @@ public class TestServer {
 	public void start() throws InstantiationException, IllegalAccessException, RepeatedPathException, InterruptedException {
 //		RpcServer.get().start(8809, TestService.class);
 		// .setSerialize(new FastJsonSerialize())
-		RpcServer.get().start(8809, Service.class);
+		RpcServer.get().enableServerRegistry("127.0.0.1:2181", "127.0.0.1").start(8807, Service.class);
 		
 	}
 	

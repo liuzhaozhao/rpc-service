@@ -19,7 +19,7 @@ public class ServiceFactory {
 	
 //	private Logger log = Logger.getLogger(this.getClass());
 	private Map<Class<?>, Object> proxyService = new HashMap<Class<?>, Object>();// 接口代理实例缓存
-	private Pool connect;
+	private Pool connectPool;
 	private ISerialize serialize;
 	private String[] serverAddress;
 	private ResetReturn resetReturn;
@@ -28,7 +28,7 @@ public class ServiceFactory {
 	private boolean start = false;
 	private int retryTimes = 3;// 请求数据失败时，最多重试的次数（不算第一次请求）
 	private long waitconnectTimeoutMills = 5000;// 当所有连接都不可用时，最大等待连接的时间
-	private ConnectManage registry;
+	private ConnectManage connectManage;
 	
 	// 禁止外部创建实例
 	private ServiceFactory(){}
@@ -41,24 +41,24 @@ public class ServiceFactory {
 		Utils.checkArgument(serverAddress != null && serverAddress.length > 0, "客户端连接不能为null");
 		Utils.checkStatus(!start, "服务已启动，不可以重复调用");
 		this.serverAddress = serverAddress;
-		if(connect == null) {
-			connect = NettyPool.getInstance();
+		if(connectPool == null) {
+			connectPool = NettyPool.getInstance();
 		}
 		if(serialize == null) {
 			serialize = new FstSerialize();
 		}
 //		connect.updateConnect(Arrays.asList(serverAddress));
-		if(registry == null) {
-			registry = new DefaultConnectManage(connect);
+		if(connectManage == null) {
+			connectManage = new DefaultConnectManage();
 		}
-		registry.connect(serverAddress);
+		connectManage.connect(serverAddress);
 		start = true;
 	}
 	
-	public ServiceFactory setConnect(Pool connect) {
-		Utils.checkArgument(connect != null, "客户端连接不能为null");
+	public ServiceFactory setConnectPool(Pool connectPool) {
+		Utils.checkArgument(connectPool != null, "客户端连接不能为null");
 		Utils.checkStatus(!start, "服务已启动，不可以设置连接池");
-		this.connect = connect;
+		this.connectPool = connectPool;
 		return this;
 	}
 	
@@ -95,8 +95,8 @@ public class ServiceFactory {
 		return this;
 	}
 	
-	public ServiceFactory setRegistry(ConnectManage registry) {
-		this.registry = registry;
+	public ServiceFactory setConnectManage(ConnectManage connectManage) {
+		this.connectManage = connectManage;
 		return this;
 	}
 	
@@ -121,6 +121,10 @@ public class ServiceFactory {
 		return factory.waitconnectTimeoutMills;
 	}
 	
+	public static Pool getConnectPool() {
+		return factory.connectPool;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Class<T> cls) throws InstantiationException, IllegalAccessException {
 		Utils.checkArgument(factory.serverAddress != null && factory.serverAddress.length > 0, "未初始化服务地址，请执行init方法");
@@ -133,7 +137,7 @@ public class ServiceFactory {
 		proxyFactory.setInterfaces(new Class[] { cls });// 指定接口
 		Class<?> proxyClass = proxyFactory.createClass();
 		T service = (T) proxyClass.newInstance();// 设置Handler处理器
-		((ProxyObject) service).setHandler(new ServiceProxy(factory.connect, factory.resetReturn));// 所有服务代理使用一个代理实例
+		((ProxyObject) service).setHandler(new ServiceProxy(factory.connectPool, factory.resetReturn));// 所有服务代理使用一个代理实例
 		factory.proxyService.put(cls, service);
 		return service;
 	}

@@ -220,7 +220,7 @@ public class NettyPool implements Pool {
         		if (channelFuture.isSuccess()) {
         			ClientHandler handler = channelFuture.channel().pipeline().get(ClientHandler.class);
         			connectedHandlers.add(handler);
-        			log.info("添加连接："+handler.getRemotePeer());
+        			log.info("添加连接："+remotePeer);
         			weakupWaitConnect();
         		} else {
         			log.warn("连接失败："+remotePeer, channelFuture.cause());

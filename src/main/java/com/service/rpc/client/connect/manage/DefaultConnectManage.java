@@ -8,8 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.service.rpc.client.connect.pool.Pool;
-import com.service.rpc.common.Utils;
+import com.service.rpc.client.ServiceFactory;
 
 /**
  * 该连接方式为服务直连方式，如服务地址为：127.0.0.1:10001、127.0.0.1:10002，则该注册方式会定期检测服务的可用性，定时删除和添加服务
@@ -20,14 +19,8 @@ public class DefaultConnectManage implements ConnectManage {
 	private static final Logger log = Logger.getLogger(DefaultConnectManage.class);
 	private static final long CHECK_CONNECT_TIME_INTERVAL = 3000;
 	private boolean checkConnect = true;// 是否定时检测连接是否可用，如果使用了nginx做代理，则不需要检测连接是否可用
-	private Pool pool;
 	private List<InetSocketAddress> serverAddress = new ArrayList<InetSocketAddress>();
 	
-	public DefaultConnectManage(Pool pool) {
-		Utils.checkArgument(pool != null, "参数不能为null");
-		this.pool = pool;
-	}
-
 	@Override
 	public void connect(String... servers) {
 		for(String server : servers) {
@@ -69,7 +62,7 @@ public class DefaultConnectManage implements ConnectManage {
 				log.warn("连接服务异常："+address, e);
 			}
 		}
-		pool.updateConnect(useableAddress);
+		ServiceFactory.getConnectPool().updateConnect(useableAddress);
 	}
 
 }

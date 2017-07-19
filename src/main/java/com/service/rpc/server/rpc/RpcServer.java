@@ -7,8 +7,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.service.rpc.bean.RegistryInfo;
 import com.service.rpc.common.HashKit;
 import com.service.rpc.common.Utils;
 import com.service.rpc.exception.RepeatedPathException;
@@ -45,6 +47,8 @@ public class RpcServer {
 	private EventLoopGroup workerGroup;
 	private boolean enableLog = true;
 	private boolean serverStart = false;
+	private ServerRegistry registry;
+	private String serverIp;
 	
 	private RpcServer() {}
 	
@@ -67,11 +71,34 @@ public class RpcServer {
 			serialize = new FstSerialize();
 		}
 		initMethod();
-		startServer();
-		serverStart = true;
+		try{
+			ChannelFuture future = startServer();
+			serverStart = true;
+			if(registry != null) {
+				registry.registry(new RegistryInfo(serverIp, port));
+			}
+			future.channel().closeFuture().sync();
+		}finally{
+			stop();
+		}
 	}
 	
-	public RpcServer setSerialize(ISerialize serialize) {
+	/**
+	 * 
+	 * @param registryIpPort	127.0.0.1:2181
+	 * @param serverIp	服务对外IP
+	 * @param serverPort	服务对外端口
+	 * @return
+	 */
+	public synchronized RpcServer enableServerRegistry(String registryIpPort, String serverIp) {
+		Utils.checkStatus(registry == null, "已启用服务注册，不能重复设置");
+		Utils.checkArgument(StringUtils.isNotBlank(registryIpPort) && StringUtils.isNotBlank(serverIp), "参数不能为空");
+		registry = new ServerRegistry(registryIpPort);
+		this.serverIp = serverIp;
+		return this;
+	}
+	
+	public synchronized RpcServer setSerialize(ISerialize serialize) {
 		Utils.checkArgument(serialize != null, "序列化配置不能为null");
 		Utils.checkStatus(!serverStart, "服务已启动，不可以设置序列化");
 		this.serialize = serialize;
@@ -159,35 +186,30 @@ public class RpcServer {
 	 * @param serialize
 	 * @throws InterruptedException
 	 */
-	private void startServer() throws InterruptedException {
+	private ChannelFuture startServer() throws InterruptedException {
 		bossGroup = new NioEventLoopGroup(1);
 		workerGroup = new NioEventLoopGroup();
 		
-		try{
-			ServerBootstrap bootstrap = new ServerBootstrap();
-			bootstrap.option(ChannelOption.SO_BACKLOG, 1024)
-				.group(bossGroup, workerGroup)
-				.channel(NioServerSocketChannel.class)
-				.handler(new LoggingHandler(LogLevel.INFO))
-				.childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel channel) throws Exception {
-                        channel.pipeline()
-                                .addLast(new LengthFieldBasedFrameDecoder(65536,0,4,0,0))
-                                .addLast(new ServerDecoder(serialize))
-                                .addLast(new ServerEncoder(serialize))
-                                .addLast(new ServerHandler());
-                    }
-                })
-	            .childOption(ChannelOption.SO_KEEPALIVE, true)
-	            .childOption(ChannelOption.TCP_NODELAY, true);
-			
-			ChannelFuture future = bootstrap.bind(port).sync();
-			
-			log.info("rpc server listening on port " + port);
-			future.channel().closeFuture().sync();
-		}finally{
-			stop();
-		}
+		ServerBootstrap bootstrap = new ServerBootstrap();
+		bootstrap.option(ChannelOption.SO_BACKLOG, 1024)
+			.group(bossGroup, workerGroup)
+			.channel(NioServerSocketChannel.class)
+			.handler(new LoggingHandler(LogLevel.INFO))
+			.childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                public void initChannel(SocketChannel channel) throws Exception {
+                    channel.pipeline()
+                            .addLast(new LengthFieldBasedFrameDecoder(65536,0,4,0,0))
+                            .addLast(new ServerDecoder(serialize))
+                            .addLast(new ServerEncoder(serialize))
+                            .addLast(new ServerHandler());
+                }
+            })
+            .childOption(ChannelOption.SO_KEEPALIVE, true)
+            .childOption(ChannelOption.TCP_NODELAY, true);
+		
+		ChannelFuture future = bootstrap.bind(port).sync();
+		log.info("rpc server listening on port " + port);
+		return future;
 	}
 }
