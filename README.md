@@ -3,7 +3,9 @@ rpc-service是一个基于netty的远程方法调用框架，也可单独提供h
 
 #### 使用方式
 假定接口类IService.java代码为：  
-`public String test(int arg);`
+```java
+public String test(int arg);
+```
 
 接口实现类Service.java代码为：
 ```java
@@ -13,12 +15,22 @@ public String test(int arg){
 ```
 
 ##### 开启RPC服务
-`RpcServer.get().start(8809, Service.class);`
-
+```java
+RpcServer.get().start(8809, Service.class);
+```
 ##### RPC客户端调用
-初始化：`ServiceFactory.get().init(new String[]{"127.0.0.1:8809"});`  
-获取类实例：`IService iService = ServiceFactory.get(IService.class);`  
-调用方法：`iService.test(123);`  
+初始化：
+```java
+ServiceFactory.get().init(new String[]{"127.0.0.1:8809"});
+```
+获取类实例：
+```java
+IService iService = ServiceFactory.get(IService.class);
+```
+调用方法：
+```java
+iService.test(123);
+```
 
 ##### 开启HTTP服务
 RPC服务方式用于服务提供方和服务使用方都为java语言时使用，如果服务调用方不为java语言，则服务端往往提供的是http调用方式，以下为开启http服务的方式  
@@ -29,8 +41,11 @@ public String test(@QueryParam("param") int arg){
 	return "arg="+arg;
 }
 ```
-开启服务：`HttpServer.get().start(8080, Service.class);`  
-客户端通过url：http://localhost:8080/path?param=123即可获取返回值，默认返回值为json格式  
+开启服务：
+```java
+HttpServer.get().start(8080, Service.class);
+```
+客户端通过url：http://localhost:8080/path?param=123	即可获取返回值，默认返回值为json格式  
 
 #### 测试
 开启服务测试类：rpc.TestServer.java  
