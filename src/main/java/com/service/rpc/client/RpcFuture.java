@@ -111,7 +111,6 @@ public class RpcFuture implements Future<Object> {
         }
 
         public boolean isDone() {
-            getState();
             return getState() == done;
         }
     }

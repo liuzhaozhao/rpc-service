@@ -74,7 +74,7 @@ public class RpcServer {
 		try{
 			ChannelFuture future = startServer();
 			serverStart = true;
-			if(registry != null) {
+			if(registry != null) {// 如果需要注册服务，则执行服务注册（zookeeper）
 				registry.registry(new RegistryInfo(serverIp, port));
 			}
 			future.channel().closeFuture().sync();

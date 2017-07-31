@@ -108,12 +108,12 @@
 	    <version>20.0</version>
 	    <scope>test</scope>
 	</dependency>
-    <dependency>
-	    <groupId>cn.jugame</groupId>
-	    <artifactId>http-service</artifactId>
-	    <version>1.0.3</version>
-	    <scope>test</scope>
-    </dependency>
+<!--     <dependency> -->
+<!-- 	    <groupId>cn.jugame</groupId> -->
+<!-- 	    <artifactId>http-service</artifactId> -->
+<!-- 	    <version>1.0.3</version> -->
+<!-- 	    <scope>test</scope> -->
+<!--     </dependency> -->
 	
 	<!-- Motan RPC -->
 	 <dependency>

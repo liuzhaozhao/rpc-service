@@ -19,7 +19,7 @@ public class TestClient2 {
 			com.service.rpc.client.ServiceFactory.get().setConnectManage(new ZookeeperConnectManage()).init(new String[]{"127.0.0.1:2181"});
 			return com.service.rpc.client.ServiceFactory.get(IService.class);
 		}catch(Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 		return null;
 		
