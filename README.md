@@ -1,7 +1,7 @@
-#### 描述
+## 描述
 rpc-service是一个基于netty的远程方法调用框架，也可单独提供http服务，http服务是通过JSR-311规范配置
 
-#### 使用方式
+## 使用方式
 假定接口类IService.java代码为：  
 ```java
 public String test(int arg);
@@ -14,11 +14,11 @@ public String test(int arg){
 }
 ```
 
-##### 开启RPC服务
+#### 开启RPC服务
 ```java
 RpcServer.get().start(8809, Service.class);
 ```
-##### RPC客户端调用
+#### RPC客户端调用
 初始化：
 ```java
 ServiceFactory.get().init(new String[]{"127.0.0.1:8809"});
@@ -32,7 +32,7 @@ IService iService = ServiceFactory.get(IService.class);
 iService.test(123);
 ```
 
-##### 开启HTTP服务
+#### 开启HTTP服务
 RPC服务方式用于服务提供方和服务使用方都为java语言时使用，如果服务调用方不为java语言，则服务端往往提供的是http调用方式，以下为开启http服务的方式  
 对Service类添加http配置注解，添加后的代码为：  
 ```java
@@ -47,7 +47,7 @@ HttpServer.get().start(8080, Service.class);
 ```
 客户端通过url：http://localhost:8080/path?param=123	即可获取返回值，默认返回值为json格式  
 
-#### 测试
+## 测试
 开启服务测试类：rpc.TestServer.java  
 开启客户端测试类：rpc.TestClient.java、rpc.TestClient2.java  
 
