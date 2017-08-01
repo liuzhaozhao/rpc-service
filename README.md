@@ -2,14 +2,14 @@
 rpc-service是一个基于netty的远程方法调用框架，也可单独提供HTTP服务，HTTP服务是通过JSR-311规范配置
 
 ## 使用方式
-假定接口类IService.java代码为：  
+假定接口代码为：  
 ```java
 public interface IService {
 	public String test(int arg);
 }
 ```
 
-接口实现类Service.java代码为：
+接口实现类代码为：
 ```java
 public class Service implements IService {
 	public String test(int arg){
@@ -34,8 +34,8 @@ iService.test(123);
 ```
 
 #### 3. 开启HTTP服务
-RPC服务方式用于服务提供方和服务使用方都为java语言时使用，如果服务调用方不为java语言，则服务端往往提供的是http调用方式，以下为开启http服务的方式  
-对Service类添加http配置注解，添加后的代码为（HTTP服务不需要实现接口）：  
+RPC服务方式用于服务提供方和服务使用方都为java语言时使用，如果服务调用方不为java语言，则服务端往往提供的是HTTP调用方式，以下为开启http服务的方式  
+对Service类添加http配置注解，添加后的代码为（HTTP服务不需要实现接口）：   
 ```java
 public class Service {
 	@GET @Path("/path")
@@ -65,3 +65,6 @@ HttpServer.get().start(8080, Service.class);
 - zookeeper服务管理支持  
 - 正在使用中的客户端连接断线重连，重连时获取不同的连接  
 
+## 待完成功能
+- 添加其他序列化支持，目前支持：FST序列化、fastJson
+- 添加安全校验，可标识客户端调用
