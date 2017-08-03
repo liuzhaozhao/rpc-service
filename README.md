@@ -68,3 +68,4 @@ HttpServer.get().start(8080, Service.class);
 ## 待完成功能
 - 添加其他序列化支持，目前支持：FST序列化、fastJson
 - 添加安全校验，可标识客户端调用
+- 添加spring支持
