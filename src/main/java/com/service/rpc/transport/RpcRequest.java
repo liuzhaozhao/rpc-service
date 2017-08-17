@@ -2,6 +2,8 @@ package com.service.rpc.transport;
 
 import java.io.Serializable;
 
+import com.service.rpc.client.ServiceFactory;
+
 /**
  * get/set是用于json序列化的
  * Serializable是用于字节流序列化
@@ -15,7 +17,8 @@ public class RpcRequest implements Serializable {
 	private String methodIdentify;// 要调用的服务器的方法标识
 	private String requestId;// 请求ID，在所有未完成的请求中唯一，用于标识请求的响应
 	private Object[] args;// 请求参数 
-	public RpcRequest() {}
+	private ClientInfo clientInfo = new ClientInfo(ServiceFactory.getClientVersion());// 客户端信息，用于服务器标识客户端
+	public RpcRequest() {}// json序列化用到
 	
 	public RpcRequest(String methodIdentify, Object[] args) {
 //		this.isJson = isJson;
@@ -53,6 +56,14 @@ public class RpcRequest implements Serializable {
 	
 	public void setRequestId(String requestId) {
 		this.requestId = requestId;
+	}
+	
+	public ClientInfo getClientInfo() {
+		return clientInfo;
+	}
+	
+	public void setClientInfo(ClientInfo clientInfo) {
+		this.clientInfo = clientInfo;
 	}
 	
 }

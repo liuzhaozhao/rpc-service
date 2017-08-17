@@ -37,8 +37,9 @@ public class HttpServer {
 	private IJson json;
 	private boolean enableLog = true;
 	private boolean serverStart = false;
+	private IAuth auth;
 	
-	private HttpServer() {}
+	private HttpServer() {}// 私有化构造方法，防止外部创建实例
 	
 	public static HttpServer get() {
 		return server;
@@ -75,12 +76,21 @@ public class HttpServer {
 		return this;
 	}
 	
+	public HttpServer auth(IAuth auth) {
+		this.auth = auth;
+		return this;
+	}
+	
 	public static boolean isEnableLog() {
 		return server.enableLog;
 	}
 	
 	public static IJson getJson() {
 		return server.json;
+	}
+	
+	public static IAuth getAuth() {
+		return server.auth;
 	}
 	
 	/**

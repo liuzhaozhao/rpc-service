@@ -29,6 +29,7 @@ public class ServiceFactory {
 	private int retryTimes = 3;// 请求数据失败时，最多重试的次数（不算第一次请求）
 	private long waitconnectTimeoutMills = 5000;// 当所有连接都不可用时，最大等待连接的时间
 	private ConnectManage connectManage;
+	private String clientVersion = "0.1.0";
 	
 	// 禁止外部创建实例
 	private ServiceFactory(){}
@@ -123,6 +124,10 @@ public class ServiceFactory {
 	
 	public static Pool getConnectPool() {
 		return factory.connectPool;
+	}
+	
+	public static String getClientVersion() {
+		return factory.clientVersion;
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -90,7 +90,7 @@ public class RpcServer {
 	 * @param serverPort	服务对外端口
 	 * @return
 	 */
-	public synchronized RpcServer enableServerRegistry(String registryIpPort, String serverIp) {
+	public synchronized RpcServer registry(String registryIpPort, String serverIp) {
 		Utils.checkStatus(registry == null, "已启用服务注册，不能重复设置");
 		Utils.checkArgument(StringUtils.isNotBlank(registryIpPort) && StringUtils.isNotBlank(serverIp), "参数不能为空");
 		registry = new ServerRegistry(registryIpPort);

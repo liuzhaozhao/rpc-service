@@ -60,6 +60,8 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest>
     protected HttpMethodInfo methodInfo;
     private PostRequestContentType contentType;
     
+    private Object returnData;
+    
 	@Override
     public void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) {
 		HttpServer.submit(new Runnable() {// 添加业务线程池处理
@@ -88,17 +90,20 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest>
             			render(ctx, HttpResponseStatus.NOT_FOUND, NOT_FOUND);
             			return;
             		}
+            		if(HttpServer.getAuth() != null && !HttpServer.getAuth().auth(methodInfo, url, httpType, queryParams, postParams, pathParams, postBody)) {
+            			throw new Exception("认证失败");
+            		}
             		initParams();
-            		Object returnData = methodInfo.invoke(getMethodData());
+            		returnData = methodInfo.invoke(getMethodData());
             		render(ctx, HttpResponseStatus.OK, methodInfo.getReturnType().getReturnData(returnData));
             	} catch(Exception e){
-            		String errorMsg = "请求异常";
+            		returnData = "请求异常";
             		if(e.getCause() != null) {
-            			errorMsg = e.getCause().getMessage() == null?e.getCause().toString() : e.getCause().getMessage();
+            			returnData = e.getCause().getMessage() == null?e.getCause().toString() : e.getCause().getMessage();
             		} else if (e.getMessage() != null) {
-            			errorMsg = e.getMessage();
+            			returnData = e.getMessage();
             		}
-            		render(ctx, HttpResponseStatus.BAD_REQUEST, errorMsg.getBytes());
+            		render(ctx, HttpResponseStatus.BAD_REQUEST, returnData.toString().getBytes());
             		log.warn("执行http调用异常", e);
             	}finally {
             		log();
@@ -126,6 +131,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<HttpRequest>
 		if(StringUtils.isNotEmpty(postBody)) {
 			strB.append("，postBody请求参数："+JsonUtil.toJson(postBody));
 		}
+		strB.append("，响应数据为："+JsonUtil.toJson(returnData));
 		log.info(strB.toString());
 	}
 	

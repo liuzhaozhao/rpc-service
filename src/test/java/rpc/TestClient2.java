@@ -13,10 +13,10 @@ import service.IService;
 public class TestClient2 {
 	
 	private IService getService() throws Exception {
-		// .setSerialize(new FastJsonSerialize())
-//		com.service.rpc.client.ServiceFactory.get().setConnectManage(new ZookeeperConnectManage()).init(new String[]{"127.0.0.1:8808","127.0.0.1:8809"});
 		try{
-			com.service.rpc.client.ServiceFactory.get().setConnectManage(new ZookeeperConnectManage()).init(new String[]{"127.0.0.1:2181"});
+//			 .setSerialize(new FastJsonSerialize())
+			com.service.rpc.client.ServiceFactory.get().init(new String[]{"127.0.0.1:8807"});
+//			com.service.rpc.client.ServiceFactory.get().setConnectManage(new ZookeeperConnectManage()).init(new String[]{"127.0.0.1:2181"});
 			return com.service.rpc.client.ServiceFactory.get(IService.class);
 		}catch(Exception e) {
 			e.printStackTrace(); 
